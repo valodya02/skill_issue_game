@@ -87,7 +87,7 @@ function renderLobby() {
   const zal = S.mode === 'zal', host = S.players.find((p) => !p.bot)?.id === meta.you;
   $('startz').classList.toggle('hidden', !(zal && host));
   $('rdy').classList.toggle('hidden', zal);
-  $('lhint').textContent = zal ? `В зале ${S.players.length} из 32. ${host ? 'Жми «Старт», когда все зашли, опоздавшие влетят прямо в бой.' : 'Ждём, пока хост нажмёт «Старт».'}`
+  $('lhint').textContent = zal ? `В зале ${S.players.length} из 100. ${host ? 'Жми «Старт», когда все зашли, опоздавшие влетят прямо в бой.' : 'Ждём, пока хост нажмёт «Старт».'}`
     : 'Старт, когда все слоты заняты и все готовы.';
 }
 
@@ -136,9 +136,20 @@ function renderShop(me) {
 let prevPhase = null;
 let prevWeaponId = null;
 const weaponOf = new Map();  // сервер шлёт оружие только при смене
+// зал шлёт чужих урезанными, своё полное приходит отдельным 'me'
+let mine = null;
+sock.on('me', (m) => { mine = m; const p = S?.players.find((o) => o.id === meta?.you); if (p) Object.assign(p, m); });
+const infoOf = new Map();
 sock.on('state', (s) => {
+  // зал шлёт имя, перса и команду не в каждом кадре, пустые st, z и hop опускает
+  s.players = s.players.filter((p) => {
+    if (p.char) infoOf.set(p.id, { name: p.name, team: p.team, char: p.char }); else Object.assign(p, infoOf.get(p.id));
+    p.st ||= {}; p.z ||= 0; p.hop ||= 0;
+    return p.char;
+  });
   for (const p of s.players) {
     if (p.weapon) weaponOf.set(p.id, p.weapon); else p.weapon = weaponOf.get(p.id);
+    if (mine && p.id === meta?.you && p.cd === undefined) Object.assign(p, mine);
   }
   S = s;
   if (meta && meta.mode !== s.mode) {
@@ -166,7 +177,9 @@ sock.on('state', (s) => {
   prevPhase = s.phase;
 });
 
-sock.on('fx', (f) => {
+sock.on('fxs', (list) => list.forEach(onFx));
+sock.on('fx', onFx);
+function onFx(f) {
   const t = performance.now();
   window.GAME3D?.fx(f);
   if (['shot', 'turret'].includes(f.k)) {
@@ -201,7 +214,7 @@ sock.on('fx', (f) => {
     toast(`${esc(f.who)} выковал ${w.emoji} <b>${esc(w.name)}</b><br><i>${esc(w.lore || '')}</i>`, 4500);
     say(w.name, 'ru-RU');
   }
-});
+}
 sock.on('terminal', (data) => {
   terminal = data.code ? data : null;
   if (data.result === 'ok') sound('code_ok');

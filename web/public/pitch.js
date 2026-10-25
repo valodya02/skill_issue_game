@@ -50,17 +50,17 @@ $('shut').addEventListener('click', () => show(scr.length - 1));
 $('toStart').addEventListener('click', () => show(0));
 document.addEventListener('click', (e) => { if (!$('menu').contains(e.target) && e.target !== $('start')) $('menu').classList.remove('on'); });
 
-// QR на весь зал: ведёт в комнату zal на том же хосте, где открыт питч
+// QR последнего раунда: короткий /zal на том же хосте, где открыт питч
 // дека с файла: ссылки ведут на прод, иначе на тот же хост
 const base = location.protocol === 'file:' ? 'https://94-228-163-141.sslip.io' : location.origin;
-const zalUrl = `${base}/?room=zal&mode=zal`;
-$('phost').textContent = base.replace(/^https?:\/\//, '');
+const zalUrl = `${base}/zal`;
+$('phost').textContent = zalUrl.replace(/^https?:\/\//, '');
 // кнопки в игру: на финальном слайде и в таскбаре на каждом; клик не листает слайды
 document.querySelectorAll('a[href^="/?room="]').forEach((a) => { a.href = base + a.getAttribute('href'); a.addEventListener('click', (e) => e.stopPropagation()); });
 try {
   const q = qrcode(0, 'M'); q.addData(zalUrl); q.make();
   $('pqr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
-  $('pqr').querySelector('svg').setAttribute('style', 'width:300px;height:300px;display:block');
+  $('pqr').querySelector('svg').setAttribute('style', 'width:560px;height:560px;display:block');
 } catch { $('pqr').textContent = zalUrl; }
 
 // музыка фоном: файл берётся с ноута (в репо трек не кладём), M пауза, - и = громкость, мягкий вход и выход

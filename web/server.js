@@ -20,6 +20,7 @@ const app = express();
 app.use('/models', express.static(path.join(__dirname, 'public', 'models'), { maxAge: '7d' }));
 app.use('/music', express.static(path.join(__dirname, 'public', 'music'), { maxAge: '7d' }));
 app.use('/sfx', express.static(path.join(__dirname, 'public', 'sfx'), { maxAge: '7d' }));
+app.get('/zal', (req, res) => res.redirect('/?room=zal&mode=zal'));
 app.use(express.static(path.join(__dirname, 'public')));
 // three и модели не меняются между выкатками: неделя кэша, второй заход без мегабайта загрузки
 app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build'), { maxAge: '7d', immutable: true }));
@@ -30,7 +31,7 @@ const io = new Server(server, { transports: ['websocket'], perMessageDeflate: fa
 const rooms = new Map();
 // боты = клише ИИ-стартапов, до 16 символов (сервер режет имя)
 const BOT_NAMES = ['Агент агентов', 'Notion с чатом', 'GPT-обёртка', 'ARR $0', 'Пивот-бот', 'Вейтлист 3 чел', 'Слоп-бот', 'Фиол. градиент', 'Воздухан', 'Сигма-бот', 'Скуф'];
-// dm и zal: каждый сам за себя; zal = зал на 32, старт по кнопке хоста, вход в идущий бой
+// dm и zal: каждый сам за себя; zal = зал на 100, старт по кнопке хоста, вход в идущий бой
 const MODES = ['1v1', '2v2', 'dm', 'zal'];
 const ffa = (room) => room?.mode === 'dm' || room?.mode === 'zal';
 const now = () => Date.now();
@@ -61,7 +62,7 @@ function getRoom(code, mode) {
   }
   return rooms.get(code);
 }
-const slots = (room) => ({ '1v1': 2, zal: 32 })[room.mode] || 4;
+const slots = (room) => ({ '1v1': 2, zal: 100 })[room.mode] || 4;
 
 function addPlayer(room, id, name, bot = false) {
   const counts = [0, 0];
@@ -115,6 +116,19 @@ function resetRound(room) {
   }
 }
 
+// ушёл посреди боя: место занимает бот, раунды идут дальше; перезашедший заберёт его обратно
+function rekey(room, p, id) {
+  room.players.delete(p.id);
+  if (room.bomb?.carrier === p.id) room.bomb.carrier = id;
+  room.sentW.delete(p.id);
+  p.id = id; p.infoUntil = now() + 3000;
+  room.players.set(id, p);
+}
+function bench(room, p) {
+  rekey(room, p, 'bot' + uid++);
+  Object.assign(p, { bot: true, sub: true, ready: true, turret: null, name: BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)] });
+}
+
 function tryStart(room, force = false) {
   const ps = [...room.players.values()];
   if (room.phase !== 'lobby') return;
@@ -128,7 +142,11 @@ function tryStart(room, force = false) {
   resetRound(room);
 }
 
-function emitFx(room, fx) { io.to(room.code).emit('fx', fx); }
+// зал: эффекты копятся и уходят одной пачкой со снапшотом, иначе 100 прыжков = 10 000 пакетов в секунду
+function emitFx(room, fx) {
+  if (room.mode !== 'zal' || fx.k === 'banner') return io.to(room.code).emit('fx', fx);
+  if ((room.fxq ||= []).length < 80) room.fxq.push(fx);
+}
 
 // --- урон и статусы ---
 function has(p, s) { return (p.st[s] || 0) > now(); }
@@ -661,20 +679,33 @@ function step(room, dt) {
   else if (timeout && room.bomb?.state !== 'planted') finishRound(room, 1, t);
 }
 
+// чужим в зале только то, что рисуется; своё полное уходит отдельным 'me'
+const full = (p, t) => ({
+  money: p.money, tokens: p.tokens, forging: !!p.forging, spr: +inaccuracy(p).toFixed(3), grenade: p.grenade, grenades: p.grenades, turret: p.turret,
+  cd: Object.fromEntries(Object.entries(p.cd).map(([k, v]) => [k, Math.max(0, v - t)])),
+});
+function stOf(p, t, lean) {
+  const st = Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t]));
+  return lean && !Object.keys(st).length ? {} : { st };
+}
+const slim = (room) => room.mode === 'zal' && room.phase !== 'lobby';
+
 function snapshot(room) {
-  const t = now();
+  const t = now(), lean = slim(room), info = !((room.sends = (room.sends || 0) + 1) % 15);
   return {
     phase: room.phase, mode: room.mode, score: room.score, winner: room.winner,
     timer: ['buy', 'playing'].includes(room.phase) ? Math.max(0, Math.ceil(((room.bomb?.state === 'planted' ? room.bomb.plantedAt + 35000 : room.phaseUntil) - t) / 1000)) : 0,
     players: [...room.players.values()].map((p) => ({
-      id: p.id, name: p.name, team: p.team, char: p.char, ready: p.ready, bot: p.bot,
+      id: p.id,
+      // зал: имя, перс и команда раз в ~1,5 с и первые 3 с после входа, клиент держит кэш
+      ...(!lean || info || p.infoUntil > t ? { name: p.name, team: p.team, char: p.char } : {}),
+      ...(lean ? {} : { ready: p.ready, bot: p.bot }),
       x: Math.round(p.x), y: Math.round(p.y), hp: Math.round(p.hp), alive: p.alive, ang: +p.ang.toFixed(2), kills: p.kills,
-      money: p.money, tokens: p.tokens, forging: !!p.forging,
       // оружие с 3D-моделью весит ~300 байт: шлём только при смене, клиент держит кэш
       ...(room.sentW.get(p.id) !== p.weapon && room.sentW.set(p.id, p.weapon) ? { weapon: p.weapon } : {}),
-      z: Math.round(p.z), hop: p.hop || 0, spr: +inaccuracy(p).toFixed(3), grenade: p.grenade, grenades: p.grenades, turret: p.turret,
-      cd: Object.fromEntries(Object.entries(p.cd).map(([k, v]) => [k, Math.max(0, v - t)])),
-      st: Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t])),
+      ...(lean && !p.z ? {} : { z: Math.round(p.z) }), ...(lean && !p.hop ? {} : { hop: p.hop || 0 }),
+      ...(lean ? {} : full(p, t)),
+      ...stOf(p, t, lean),
     })),
     shots: room.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), r: s.r, team: s.team, emoji: s.emoji, a: +Math.atan2(s.vy, s.vx).toFixed(2), f: s.fast ? 1 : 0 })),
     pending: room.pending.map((b) => ({ x: Math.round(b.x), y: Math.round(b.y), r: b.r, left: b.at - t })),
@@ -697,8 +728,12 @@ function runTick() {
     step(room, dt);
     // volatile: забитый сокет пропускает кадр, а не копит очередь из старых снапшотов
     // зал: 30 человек × 30 Гц забивают канал, шлём каждый второй тик
-    if (room.mode === 'zal' && (room.tick = (room.tick || 0) + 1) % 2) continue;
+    // больше 40 человек: каждый третий (10 Гц), клиент сглаживает
+    if (room.mode === 'zal' && (room.tick = (room.tick || 0) + 1) % (room.players.size > 40 ? 3 : 2)) continue;
     io.to(room.code).volatile.emit('state', snapshot(room));
+    if (room.fxq?.length) { io.to(room.code).volatile.emit('fxs', room.fxq); room.fxq = []; }
+    // 'me' не volatile: сразу за снапшотом сокет занят, и volatile выкидывал его всегда
+    if (slim(room)) for (const p of room.players.values()) if (!p.bot) io.sockets.sockets.get(p.id)?.emit('me', full(p, t));
   }
 }
 if (require.main === module) setInterval(runTick, 1000 / TICK);
@@ -717,16 +752,24 @@ io.on('connection', (sock) => {
     code = String(code || 'arena').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || 'arena';
     const r = getRoom(code, mode);
     const late = r.mode === 'zal' && ['buy', 'playing'].includes(r.phase);
-    if (r.players.size >= slots(r) || (r.phase !== 'lobby' && !late)) return sock.emit('nope', 'Комната занята или бой уже идёт');
+    const sub = !late && ['buy', 'playing', 'roundEnd'].includes(r.phase) && [...r.players.values()].find((o) => o.sub);
+    if (!sub && (r.players.size >= slots(r) || (r.phase !== 'lobby' && !late))) return sock.emit('nope', 'Комната занята или бой уже идёт');
     room = r;
     sock.join(code);
-    const np = addPlayer(room, sock.id, name);
-    if (late) {
+    if (sub) {
+      rekey(room, sub, sock.id);
+      Object.assign(sub, { bot: false, sub: false, name: String(name || 'NPC').slice(0, 16) });
+    }
+    const np = sub || addPlayer(room, sock.id, name);
+    if (late && !sub) {
       // опоздавший в зал: случайный персонаж, деньги дезматча, появится на следующем тике через респаун
       np.char = CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; np.ready = true;
       resetEconomy(np, room); np.alive = false; np.respawnAt = 0;
     }
     room.sentW.clear();  // новичок должен получить оружие всех
+    np.infoUntil = now() + 3000; room.sends = -1;  // и имена всех в ближайшем снапшоте
+    const heat = { 50: 'В ЗАЛЕ 50. СЕРВЕР ПОТЕЕТ', 75: 'В ЗАЛЕ 75. VPS ЗВОНИТ МАМЕ', 100: 'В ЗАЛЕ 100. SO OVER, СЕРВЕР В ОГНЕ' }[room.players.size];
+    if (room.mode === 'zal' && heat && !sub) emitFx(room, { k: 'banner', text: heat });
     sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id, skills: SKILLS });
   });
   sock.on('pick', (cid) => { const p = me(); if (p && CHARS[cid] && room.phase === 'lobby') { p.char = cid; tryStart(room); } });
@@ -834,10 +877,10 @@ io.on('connection', (sock) => {
       cancelCode(room, p);
       if (p.turret) { const v = room.turrets.find((v) => v.id === p.turret); if (v) v.by = null; }
     }
-    room.players.delete(sock.id);
-    const humans = [...room.players.values()].filter((p) => !p.bot);
-    if (!humans.length) rooms.delete(room.code);
-    else if (room.phase !== 'lobby' && room.mode !== 'zal') room.phase = 'lobby', room.players.forEach((p) => (p.ready = p.bot));
+    const humans = [...room.players.values()].filter((o) => !o.bot && o.id !== sock.id);
+    if (!humans.length) return rooms.delete(room.code);
+    if (p && room.mode !== 'zal' && ['buy', 'playing', 'roundEnd'].includes(room.phase)) bench(room, p);
+    else room.players.delete(sock.id);
   });
 });
 

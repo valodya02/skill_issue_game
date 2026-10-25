@@ -12,8 +12,8 @@
   var sampleBase = typeof document !== 'undefined' && document.currentScript
     ? new URL('sfx/', document.currentScript.src).href : 'sfx/';
   var listener = { x: 800, y: 450 };
-  var level = 0.8;
-  var musicWanted = true;
+  var level = 0.5;
+  var musicWanted = false; // фоновый трек выключен: на показе играет музыка деки
   var clock = null;
   var track = null;
   var nextBeat = 0;

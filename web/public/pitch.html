@@ -153,21 +153,33 @@
   <p style="font-size:22px;color:#8a8a98">Источники: knowyourmeme.com/memes/vibe-coding · eweek.com, «AI Agent Wipes Production Database» · ru.hexlet.io, «Год вайб-кодинга»</p>
 </section>
 
-<!-- 11. финал: завершение работы, кнопки ведут в игру -->
+<!-- 11. жюри в бой: 2 на 2 -->
 <section class="scr" data-name="Играть" id="final" style="background:linear-gradient(180deg,#5a7edc 0%,#2e4fb0 100%);color:#fff;align-items:center;justify-content:center">
-  <div class="win" style="width:1500px;border-radius:12px;border:none">
+  <div class="win" style="width:1400px;border-radius:12px;border:none">
     <div class="tbar" style="background:#0a246a"><span>Завершение работы презентации</span><span style="font-style:italic">AEC</span></div>
-    <div style="background:linear-gradient(180deg,#7c9ef0,#5577d8);padding:56px 64px;display:flex;gap:64px;align-items:center;color:#fff">
-      <div style="background:#fff;padding:18px;border-radius:12px;flex:none"><div id="pqr" style="width:300px;height:300px"></div></div>
-      <div style="display:flex;flex-direction:column;gap:22px">
-        <p style="font:400 56px 'Russo One',sans-serif">Выключать презентацию и включать зал?</p>
-        <p style="font-size:30px;line-height:1.4">Наведите камеру на QR или откройте <b id="phost"></b> с ноутбука. Это одна комната на весь зал, до 32 человек: заходите, вас стартует ведущий.</p>
-        <div style="display:flex;gap:24px;margin-top:10px">
-          <a class="xpbtn" id="p2v2" href="/?room=jury&amp;mode=2v2" style="text-decoration:none;font-weight:700;background:linear-gradient(180deg,#ffe27a,#e8a800)">▶ Жюри, в бой</a>
-          <a class="xpbtn" href="/?room=zal&amp;mode=zal" style="text-decoration:none">Зал на 32</a>
-          <button class="xpbtn" id="toStart">Отмена</button>
-        </div>
+    <div style="background:linear-gradient(180deg,#7c9ef0,#5577d8);padding:56px 64px;display:flex;flex-direction:column;gap:26px;color:#fff">
+      <p style="font:400 64px 'Russo One',sans-serif">Выключать презентацию и включать игру?</p>
+      <p style="font-size:32px;line-height:1.4">Сначала 2 на 2: жюри против нас. Инструкции нет, подсказки появляются там, где стоишь.</p>
+      <div style="display:flex;gap:24px;margin-top:10px">
+        <a class="xpbtn" id="p2v2" href="/?room=jury&amp;mode=2v2" style="text-decoration:none;font-weight:700;background:linear-gradient(180deg,#ffe27a,#e8a800)">▶ Жюри, в бой</a>
+        <button class="xpbtn next">Сразу к последнему раунду</button>
+        <button class="xpbtn" id="toStart">Отмена</button>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12. последний раунд: весь зал в одну комнату по QR -->
+<section class="scr" data-name="Последний раунд" id="last" style="background:radial-gradient(circle at 30% 50%,#4a0d0d 0%,#120404 70%);color:#fff;align-items:center;justify-content:center">
+  <div style="display:flex;gap:80px;align-items:center">
+    <div style="background:#fff;padding:24px;border-radius:16px;flex:none;box-shadow:0 0 0 8px #ffd23f,0 0 80px #ff4f1f"><div id="pqr" style="width:560px;height:560px"></div></div>
+    <div style="display:flex;flex-direction:column;gap:28px;max-width:900px">
+      <p class="tag" style="color:#ffd23f;font-size:30px">последний раунд · дезматч</p>
+      <p class="wa" style="font-size:112px">ЗАЛ ПРОТИВ СЕРВЕРА</p>
+      <p style="font-size:34px;line-height:1.4">Одна комната на 100 человек. Открывайте с ноутбука:</p>
+      <p style="font:400 50px 'Russo One',sans-serif;color:#ffd23f" id="phost"></p>
+      <p style="font-size:26px;color:#ffb3a0">Порог 50: сервер потеет. 75: звонит маме. 100: so over.</p>
+      <div style="display:flex;gap:24px"><a class="xpbtn" href="/?room=zal&amp;mode=zal" style="text-decoration:none;font-weight:700;background:linear-gradient(180deg,#ffe27a,#e8a800)">▶ Я хост, захожу</a></div>
     </div>
   </div>
 </section>
@@ -177,7 +189,7 @@
   <div id="menuList"></div>
   <div class="off"><a href="/" style="margin-right:24px">Играть</a><a id="shut">Завершение работы</a></div>
 </div>
-<div id="task"><button id="start">пуск</button><span class="slot" id="slot"></span><a class="slot go" id="go2v2" href="/?room=jury&amp;mode=2v2">▶ Играть 2 на 2</a><a class="slot go" id="gozal" href="/?room=zal&amp;mode=zal">Зал на 32</a><span id="tray"><button id="mus" title="музыка: клик выбрать файл, M пауза, - и = громкость">♪</button><input id="vol" type="range" min="0" max="100" value="15" class="hidden"><input id="musf" type="file" accept="audio/*" class="hidden"></span><span id="clock"></span></div>
+<div id="task"><button id="start">пуск</button><span class="slot" id="slot"></span><a class="slot go" id="go2v2" href="/?room=jury&amp;mode=2v2">▶ Играть 2 на 2</a><a class="slot go" id="gozal" href="/?room=zal&amp;mode=zal">Зал на 100</a><span id="tray"><button id="mus" title="музыка: клик выбрать файл, M пауза, - и = громкость">♪</button><input id="vol" type="range" min="0" max="100" value="15" class="hidden"><input id="musf" type="file" accept="audio/*" class="hidden"></span><span id="clock"></span></div>
 </div>
 <script src="qrcode.js"></script>
 <script src="pitch.js"></script>
