@@ -46,9 +46,18 @@
     <div class="row" style="flex-direction:column; align-items:stretch">
       <input id="nm" placeholder="Ник" maxlength="16">
       <input id="rc" placeholder="Код комнаты" maxlength="12">
-      <select id="md"><option value="2v2">2 на 2</option><option value="1v1">1 на 1</option><option value="dm">Дезматч</option></select>
+      <select id="md"><option value="2v2">2 на 2</option><option value="1v1">1 на 1</option><option value="dm">Дезматч</option><option value="zal">Зал на 32</option></select>
       <button class="main" id="go">Зайти</button>
     </div>
+    <p class="muted hidden" id="touch">Управление только клавиатура и мышь: открой эту ссылку на ноутбуке.</p>
+  </div>
+</div>
+
+<div id="qrbox" class="ov hidden" title="клик закрывает" style="z-index:20;background:#000c">
+  <div class="card" style="text-align:center;max-width:none">
+    <div id="qrimg"></div>
+    <h1 id="qrurl" style="margin:16px 0 0;word-break:break-all"></h1>
+    <p class="muted">Заходи с ноутбука: клавиатура и мышь. Клик закрывает.</p>
   </div>
 </div>
 
@@ -56,9 +65,9 @@
   <div class="card">
     <div class="row" style="justify-content:space-between">
       <h1>Лобби <span id="lcode"></span></h1>
-      <button id="share">Скопировать ссылку</button>
+      <span><button id="qr">QR на экран</button> <button id="share">Скопировать ссылку</button></span>
     </div>
-    <div class="row"><label for="lmode">Режим</label><select id="lmode"><option value="1v1">1 на 1</option><option value="2v2">2 на 2</option><option value="dm">Дезматч</option></select></div>
+    <div class="row"><label for="lmode">Режим</label><select id="lmode"><option value="1v1">1 на 1</option><option value="2v2">2 на 2</option><option value="dm">Дезматч</option><option value="zal">Зал на 32</option></select></div>
     <div class="teams"><div class="team t0" id="tm0"></div><div class="team t1" id="tm1"></div></div>
     <h2>Выбери брейнрота</h2>
     <div class="grid" id="chars"></div>
@@ -66,7 +75,8 @@
       <button id="swap">Сменить команду</button>
       <button id="bot">+ бот</button>
       <button class="main" id="rdy">Готов</button>
-      <span class="muted">Старт, когда все слоты заняты и все готовы.</span>
+      <button class="main hidden" id="startz">Старт для всех</button>
+      <span class="muted" id="lhint">Старт, когда все слоты заняты и все готовы.</span>
     </div>
     <p class="muted" style="margin:14px 0 0;font-size:11px">Gun sounds by F8 Studios</p>
   </div>
@@ -107,6 +117,7 @@
 <script src="weapons.js"></script>
 <script src="map2d.js"></script>
 <script src="sfx.js"></script>
+<script src="qrcode.js"></script>
 <script src="client.js"></script>
 <script src="hud.js"></script>
 <script type="module" src="client3d.js"></script>

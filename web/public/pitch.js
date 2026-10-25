@@ -50,6 +50,47 @@ $('shut').addEventListener('click', () => show(scr.length - 1));
 $('toStart').addEventListener('click', () => show(0));
 document.addEventListener('click', (e) => { if (!$('menu').contains(e.target) && e.target !== $('start')) $('menu').classList.remove('on'); });
 
+// QR на весь зал: ведёт в комнату zal на том же хосте, где открыт питч
+// дека с файла: ссылки ведут на прод, иначе на тот же хост
+const base = location.protocol === 'file:' ? 'https://94-228-163-141.sslip.io' : location.origin;
+const zalUrl = `${base}/?room=zal&mode=zal`;
+$('phost').textContent = base.replace(/^https?:\/\//, '');
+// кнопки в игру: на финальном слайде и в таскбаре на каждом; клик не листает слайды
+document.querySelectorAll('a[href^="/?room="]').forEach((a) => { a.href = base + a.getAttribute('href'); a.addEventListener('click', (e) => e.stopPropagation()); });
+try {
+  const q = qrcode(0, 'M'); q.addData(zalUrl); q.make();
+  $('pqr').innerHTML = q.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
+  $('pqr').querySelector('svg').setAttribute('style', 'width:300px;height:300px;display:block');
+} catch { $('pqr').textContent = zalUrl; }
+
+// музыка фоном: файл берётся с ноута (в репо трек не кладём), M пауза, - и = громкость, мягкий вход и выход
+const audio = new Audio(); audio.loop = true;
+let vol = 0.15, fadeT = null;
+const fade = (to, then) => {
+  clearInterval(fadeT);
+  fadeT = setInterval(() => {
+    const v = audio.volume + Math.sign(to - audio.volume) * 0.01;
+    if (Math.abs(to - audio.volume) <= 0.01) { audio.volume = to; clearInterval(fadeT); then?.(); } else audio.volume = Math.max(0, Math.min(1, v));
+  }, 40);
+};
+const play = () => { audio.volume = 0; audio.play().then(() => { $('mus').classList.add('on'); fade(vol); }).catch(() => {}); };
+const pause = () => fade(0, () => { audio.pause(); $('mus').classList.remove('on'); });
+const toggleMusic = () => { if (!audio.src) $('musf').click(); else if (audio.paused) play(); else pause(); };
+const setVol = (v) => { vol = Math.max(0, Math.min(1, v)); $('vol').value = Math.round(vol * 100); if (!audio.paused) { clearInterval(fadeT); audio.volume = vol; } };
+$('musf').addEventListener('change', () => {
+  const f = $('musf').files[0]; if (!f) return;
+  audio.src = URL.createObjectURL(f); $('vol').classList.remove('hidden'); play();
+});
+$('mus').addEventListener('click', (e) => { e.stopPropagation(); toggleMusic(); });
+$('vol').addEventListener('input', () => setVol($('vol').value / 100));
+$('vol').addEventListener('keydown', (e) => e.stopPropagation());
+addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'p' || e.key.toLowerCase() === 'з') location.href = $('go2v2').href;
+  else if (e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'ь') toggleMusic();
+  else if (e.key === '-') setVol(vol - 0.05);
+  else if (e.key === '=' || e.key === '+') setVol(vol + 0.05);
+});
+
 function tick() { const d = new Date(); $('clock').textContent = d.toTimeString().slice(0, 5); }
 setInterval(tick, 10000); tick();
 
