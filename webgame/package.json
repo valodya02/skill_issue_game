@@ -1,0 +1,14 @@
+{
+  "name": "skill-issue-arena",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple multiplayer Three.js + Node.js + WebSocket game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "three": "^0.180.0",
+    "ws": "^8.18.0"
+  }
+}

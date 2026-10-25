@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skill Issue Arena</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="hud" class="hidden">
+    <div id="timer">60</div>
+    <div id="scores"></div>
+    <div id="crosshair"></div>
+    <div id="hint">Клик по полю — захват мыши · WASD / стрелки — движение · Esc — освободить</div>
+  </div>
+
+  <div id="banner" class="hidden">
+    <div id="banner-text"></div>
+    <div id="banner-sub">Новый раунд через несколько секунд…</div>
+  </div>
+
+  <div id="intro">
+    <h1>SKILL ISSUE ARENA</h1>
+    <p>Собери больше монет за 60 секунд</p>
+    <input id="name" maxlength="16" placeholder="Твоё имя" autocomplete="off" />
+    <button id="play">Играть</button>
+    <p id="intro-status"></p>
+  </div>
+
+  <script type="module" src="/game.js"></script>
+</body>
+</html>
