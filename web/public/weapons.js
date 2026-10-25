@@ -7,6 +7,9 @@
     parts: [{ shape, size: [0.16, 0.16, 0.65], pos: [0, 0, 0], color }], projectile, trail,
   });
   const SHOP = {
+    coffee: { name: 'Кофеиновая граната', emoji: '☕', price: 300, dmg: 0, rate: 1000, speed: 700, range: 700, r: 12, lob: true, grenade: true, model: model('#9b6842', 'ball', 'smoke') },
+    smoke: { name: 'Дымовая граната', emoji: '🌫️', price: 300, dmg: 0, rate: 1000, speed: 700, range: 700, r: 12, lob: true, grenade: true, model: model('#888888', 'ball', 'smoke') },
+    turret_mg: { name: 'Пулемёт турели', emoji: '🔩', price: 0, dmg: 18, rate: 90, speed: 1400, range: 800, r: 7, noShop: true, model: model('#6a7078') },
     pistol:   { name: 'Пистолетто', emoji: '🔫', price: 0, dmg: 34, rate: 380, speed: 900, range: 650, r: 7, model: model('#555c65'), lore: 'Бесплатный аргумент в дорогом споре.' },
     tapok:    { name: 'Тапок-дробовик', emoji: '🩴', price: 1200, dmg: 22, rate: 850, speed: 800, range: 380, r: 8, count: 6, spread: 0.55, model: model('#ad7950', 'slipper'), lore: 'Мама сказала: не бегай.' },
     makaroni: { name: 'Макаронный автомат', emoji: '🍝', price: 2700, dmg: 26, rate: 110, speed: 1000, range: 750, r: 6, model: model('#d0ad57', 'ball', 'sparkle', 'cyl'), lore: 'Аль денте по бронежилету.' },

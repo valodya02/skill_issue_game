@@ -9,6 +9,8 @@ let gameMap = null;
 const view = new Map();              // сглаженные позиции игроков
 const fxs = [];                      // визуальные эффекты
 let shake = 0, banner = null, mouse = { x: 0, y: 0, down: false };
+let terminal = null;
+const sound = (name, x, y) => { if (window.SFX?.play) window.SFX.play(name, { x, y }); };
 const keys = {};
 let scale = 1, ox = 0, oy = 0;
 
@@ -70,9 +72,10 @@ function renderLobby() {
 $('tprice').textContent = ECON.token;
 const wg = $('wpns');
 for (const [id, w] of Object.entries({ ...SHOP, ...KIOSK })) {
+  if (w.noShop) continue;
   const b = document.createElement('button');
   b.className = 'wpn'; b.dataset.id = id;
-  b.innerHTML = `<b>${w.emoji}</b> ${w.name}<br><small class="muted">${w.price}$ · урон ${w.dmg}${w.count ? '×' + w.count : ''} · ${Math.round(60000 / w.rate)} выстр/мин</small>`;
+  b.innerHTML = `<b>${w.emoji}</b> ${w.name}<br><small class="muted">${w.price}$ · ${w.grenade ? 'граната, слот 4' : `урон ${w.dmg}${w.count ? '×' + w.count : ''} · ${Math.round(60000 / w.rate)} выстр/мин`}</small>`;
   b.onclick = () => sock.emit('buy', id);
   wg.appendChild(b);
 }
@@ -95,12 +98,12 @@ function renderShop(me) {
   $('stokens').textContent = `токенов: ${me.tokens}${me.forging ? ' · куётся...' : ''}`;
   $('scur').innerHTML = `В руках: ${me.weapon.emoji} <b>${esc(me.weapon.name)}</b> · урон ${me.weapon.dmg}` +
     `${me.weapon.count > 1 ? '×' + me.weapon.count : ''} · ${Math.round(60000 / me.weapon.rate)} выстр/мин` +
-    (me.weapon.lore ? `<br><i>${esc(me.weapon.lore)}</i>` : '');
+    (me.weapon.lore ? `<br><i>${esc(me.weapon.lore)}</i>` : '') + `<br>Слот 4: ${me.grenade ? SHOP[me.grenade].emoji + ' ' + SHOP[me.grenade].name : 'пусто'}`;
   const buy = S.phase === 'buy' || S.mode === 'dm' && S.phase === 'playing';
   wg.querySelectorAll('.wpn').forEach((b) => {
     const kiosk = Object.hasOwn(KIOSK, b.dataset.id) && (gameMap?.shops || []).some((shop) => shop.items.includes(b.dataset.id) && Math.hypot(me.x - shop.x, me.y - shop.y) <= shop.r);
     const w = KIOSK[b.dataset.id] || SHOP[b.dataset.id];
-    b.disabled = !(kiosk || buy && SHOP[b.dataset.id]) || me.money < w.price;
+    b.disabled = !(kiosk || buy && SHOP[b.dataset.id]) || me.money < w.price || (w.grenade && me.grenades?.[b.dataset.id]);
   });
   $('btok').disabled = !buy || me.money < ECON.token;
   $('fgo').disabled = me.tokens < 1 || me.forging;
@@ -130,6 +133,8 @@ sock.on('state', (s) => {
 
 sock.on('fx', (f) => {
   const t = performance.now();
+  if (['shot', 'boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'plant', 'defuse', 'turret', 'kill', 'round'].includes(f.k)) sound(f.k, f.x, f.y);
+  if (f.k === 'feed') toast(esc(f.text));
   if (f.k === 'banner') banner = { text: f.text, until: t + 1800 };
   if (f.k === 'dmg') fxs.push({ k: 'txt', x: f.x, y: f.y - 30, text: '-' + f.v, color: '#ff6b6b', t, life: 700 });
   if (f.k === 'heal') fxs.push({ k: 'txt', x: f.x, y: f.y - 30, text: '+' + f.v, color: '#5dff9b', t, life: 900 });
@@ -148,6 +153,11 @@ sock.on('fx', (f) => {
     toast(`${esc(f.who)} выковал ${w.emoji} <b>${esc(w.name)}</b><br><i>${esc(w.lore || '')}</i>`, 4500);
     say(w.name, 'ru-RU');
   }
+});
+sock.on('terminal', (data) => {
+  terminal = data.code ? data : null;
+  if (data.result === 'ok') sound('code_ok');
+  if (data.result === 'fail') sound('code_fail');
 });
 
 function say(text, lang) {
@@ -211,17 +221,27 @@ setInterval(() => {
 // ---------- ввод ----------
 addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT') return;
-  const k = e.key.toLowerCase();
   keys[e.code] = 1;
+  if (terminal && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+    e.preventDefault();
+    if (!e.repeat) sock.emit('code', { key: { ArrowUp: 'U', ArrowDown: 'D', ArrowLeft: 'L', ArrowRight: 'R' }[e.code] });
+    return;
+  }
   if (!S || !meta) return;
   if (e.code === 'KeyB' && ['buy', 'playing'].includes(S.phase)) toggleShop();
   if (S.phase !== 'playing') return;
   const w = toWorld(mouse.x, mouse.y);
   if (e.code === 'KeyQ') sock.emit('cast', { slot: 'q', ...w });
-  if (e.code === 'KeyE') sock.emit('cast', { slot: 'e', ...w });
+  if (e.code === 'KeyE' && !e.repeat) {
+    const me = S.players.find((p) => p.id === meta.you);
+    if (me?.turret || (gameMap?.turrets || []).some((v) => !S.turrets?.find((s) => s.id === v.id)?.by && Math.hypot(me.x - v.x, me.y - v.y) <= 50)) sock.emit('turret');
+    else sock.emit('cast', { slot: 'e', ...w });
+  }
   if (e.code === 'KeyR') sock.emit('cast', { slot: 'r', ...w });
   if (e.code === 'KeyF') sock.emit('pickup');
-  if (k === ' ') e.preventDefault();
+  if (e.code === 'KeyG' && !e.repeat) sock.emit('terminal');
+  if (e.code === 'Digit4' && !e.repeat) sock.emit('grenade', w);
+  if (e.code === 'Space') e.preventDefault();
 });
 addEventListener('keyup', (e) => { keys[e.code] = 0; });
 cv.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
@@ -233,7 +253,7 @@ const toWorld = (x, y) => ({ x: (x - ox) / scale, y: (y - oy) / scale });
 setInterval(() => {
   if (!meta || !S) return;
   const w = toWorld(mouse.x, mouse.y);
-  sock.emit('input', { u: keys.KeyW, d: keys.KeyS, l: keys.KeyA, r: keys.KeyD, g: keys.KeyG, ax: w.x, ay: w.y });
+  sock.emit('input', { u: keys.KeyW, d: keys.KeyS, l: keys.KeyA, r: keys.KeyD, j: keys.Space, g: keys.KeyG, ax: w.x, ay: w.y });
   if (mouse.down && S.phase === 'playing' && $('shop').classList.contains('hidden')) sock.emit('cast', { slot: 'a', ...w });
 }, 1000 / 30);
 
@@ -276,7 +296,17 @@ function frame() {
   }
 
   const me = S.players.find((p) => p.id === meta.you);
+  if (me?.st.jitter) shake = Math.max(shake, 3);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  for (const v of gameMap?.turrets || []) {
+    const state = S.turrets?.find((item) => item.id === v.id);
+    ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(v.ang * Math.PI / 180);
+    ctx.fillStyle = state?.heat ? '#ff543c' : state?.by ? '#ffd23f' : '#8e9ca6';
+    ctx.fillRect(-18, -18, 36, 36); ctx.fillRect(0, -6, 34, 12);
+    ctx.restore();
+    if (state?.heat) { ctx.fillStyle = '#ff543c'; ctx.font = 'bold 12px system-ui'; ctx.fillText('ПЕРЕГРЕВ', v.x, v.y - 35); }
+  }
 
   for (const z of S.zones) {
     ctx.fillStyle = z.kind === 'fire' ? '#ff572a66' : z.kind === 'zone' ? '#3fbf5a30' : '#ffd23f22';
@@ -322,19 +352,26 @@ function frame() {
     if (stealth && me && p.team !== me.team) continue;
     ctx.globalAlpha = stealth ? 0.4 : 1;
     const c = CHARS[p.char];
+    if (p.z) { ctx.fillStyle = '#0008'; ctx.beginPath(); ctx.ellipse(v.x, v.y, 26, 12, 0, 0, 7); ctx.fill(); }
+    const spriteY = v.y - (p.z || 0);
     ctx.fillStyle = (TEAM[p.team] || TEAM[0]) + '33'; ctx.strokeStyle = TEAM[p.team] || TEAM[0]; ctx.lineWidth = p.id === meta.you ? 5 : 3;
-    ctx.beginPath(); ctx.arc(v.x, v.y, 30, 0, 7); ctx.fill(); ctx.stroke();
-    if (p.st.invuln) { ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.arc(v.x, v.y, 36, 0, 7); ctx.stroke(); }
-    ctx.font = '36px serif'; ctx.fillText(c.emoji, v.x, v.y + 2);
-    ctx.font = '22px serif'; ctx.fillText(p.weapon.emoji, v.x + Math.cos(p.ang) * 42, v.y + Math.sin(p.ang) * 42);
+    ctx.beginPath(); ctx.arc(v.x, spriteY, 30, 0, 7); ctx.fill(); ctx.stroke();
+    if (p.st.invuln) { ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.arc(v.x, spriteY, 36, 0, 7); ctx.stroke(); }
+    ctx.font = '36px serif'; ctx.fillText(c.emoji, v.x, spriteY + 2);
+    ctx.font = '22px serif'; ctx.fillText(p.weapon.emoji, v.x + Math.cos(p.ang) * 42, spriteY + Math.sin(p.ang) * 42);
     // хп и ник
     const hpw = 64, frac = p.hp / c.hp;
-    ctx.fillStyle = '#000a'; ctx.fillRect(v.x - hpw / 2, v.y - 52, hpw, 7);
-    ctx.fillStyle = frac > 0.5 ? '#5dff9b' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'; ctx.fillRect(v.x - hpw / 2, v.y - 52, hpw * frac, 7);
-    ctx.font = 'bold 13px system-ui'; ctx.fillStyle = '#fff'; ctx.fillText(p.name, v.x, v.y - 64);
+    ctx.fillStyle = '#000a'; ctx.fillRect(v.x - hpw / 2, spriteY - 52, hpw, 7);
+    ctx.fillStyle = frac > 0.5 ? '#5dff9b' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'; ctx.fillRect(v.x - hpw / 2, spriteY - 52, hpw * frac, 7);
+    ctx.font = 'bold 13px system-ui'; ctx.fillStyle = '#fff'; ctx.fillText(p.name, v.x, spriteY - 64);
     const icons = (p.st.stun ? '💫' : '') + (p.st.root ? '🌿' : '') + (p.st.slow ? '🐌' : '') + (p.st.bleed ? '🩸' : '') + (p.st.haste ? '👟' : '');
     if (icons) { ctx.font = '16px serif'; ctx.fillText(icons, v.x, v.y + 46); }
     ctx.globalAlpha = 1;
+  }
+
+  for (const z of S.zones) if (z.kind === 'smoke') {
+    ctx.fillStyle = '#6e7178ee'; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#c6c8ca'; ctx.lineWidth = 3; ctx.stroke();
   }
 
   for (let i = fxs.length - 1; i >= 0; i--) {
@@ -367,6 +404,7 @@ function frame() {
     ctx.fillText(`${me.money}$  🪙${me.tokens}`, 16, y);
     ctx.fillStyle = '#fff'; ctx.font = '16px system-ui';
     ctx.fillText(`${me.weapon.emoji} ${me.weapon.name}`, 16, y - 26);
+    if (me.grenade) ctx.fillText(`4 ${SHOP[me.grenade].emoji} ${SHOP[me.grenade].name}`, 16, y - 50);
     ['q', 'e', 'r'].forEach((k, i) => {
       const x = innerWidth / 2 - 165 + i * 115, s = c.skills[k], left = me.cd[k] || 0;
       ctx.fillStyle = left ? '#2b2340' : '#3d2f63'; ctx.fillRect(x, y - 24, 105, 44);
@@ -376,12 +414,13 @@ function frame() {
       if (left) { ctx.font = 'bold 14px system-ui'; ctx.fillText((left / 1000).toFixed(1), x + 70, y - 10); }
     });
     ctx.textAlign = 'right'; ctx.fillStyle = '#a79cbf'; ctx.font = '13px system-ui';
-    ctx.fillText('WASD · ЛКМ огонь · Q E R скиллы · F подобрать · G держать · B магазин', innerWidth - 16, y);
+    ctx.fillText('WASD · ПРОБЕЛ прыжок · ЛКМ огонь · 4 граната · E турель · G терминал · F подобрать · B магазин', innerWidth - 16, y);
+    if (me.hop >= 2) { ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 28px system-ui'; ctx.fillText(`BHOP ×${me.hop}`, innerWidth / 2, 70); }
     if (S.bomb && gameMap) {
       let hint = '';
       if (me.team === 0 && S.bomb.carrier === me.id && S.bomb.state === 'carried' &&
-          Object.values(gameMap.sites || {}).some((site) => Math.hypot(me.x - site.x, me.y - site.y) <= site.r)) hint = 'держи G: заложить тапок';
-      if (me.team === 1 && S.bomb.state === 'planted' && Math.hypot(me.x - S.bomb.x, me.y - S.bomb.y) <= 60) hint = 'держи G: обезвредить';
+          Object.values(gameMap.sites || {}).some((site) => Math.hypot(me.x - site.x, me.y - site.y) <= site.r)) hint = 'G: запустить терминал';
+      if (me.team === 1 && S.bomb.state === 'planted' && Math.hypot(me.x - S.bomb.x, me.y - S.bomb.y) <= 60) hint = 'G: обезвредить через терминал';
       if (me.team === 0 && S.bomb.state === 'dropped' && Math.hypot(me.x - S.bomb.x, me.y - S.bomb.y) <= 70) hint = 'F: подобрать тапок';
       if (hint) { ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 22px system-ui'; ctx.fillText(hint, innerWidth / 2, innerHeight - 105); }
     }
@@ -389,6 +428,13 @@ function frame() {
       ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 18px system-ui';
       ctx.fillText('ларёк: B купить зажигалку', innerWidth / 2, innerHeight - 78);
     }
+  }
+  if (terminal) {
+    ctx.textAlign = 'center'; ctx.fillStyle = '#111b'; ctx.fillRect(innerWidth / 2 - 270, innerHeight / 2 - 75, 540, 150);
+    ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 20px system-ui'; ctx.fillText(terminal.action === 'defuse' ? 'ОБЕЗВРЕДИТЬ ТАПОК' : 'ЗАПРОГРАММИРОВАТЬ ТАПОК', innerWidth / 2, innerHeight / 2 - 36);
+    ctx.font = 'bold 48px system-ui';
+    const arrows = { U: '↑', D: '↓', L: '←', R: '→' };
+    ctx.fillText([...terminal.code].map((k, i) => i < terminal.index ? '✓' : arrows[k]).join(' '), innerWidth / 2, innerHeight / 2 + 22);
   }
   if (banner && t < banner.until) {
     ctx.textAlign = 'center'; ctx.font = `900 ${Math.min(72, innerWidth / 12)}px system-ui`;

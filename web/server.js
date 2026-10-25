@@ -8,6 +8,8 @@ const { CHARS } = require('./public/chars.js');
 const { ECON, SHOP, KIOSK = {}, NPC = {}, normalize } = require('./public/weapons.js');
 const { forge } = require('./forge.js');
 const { moveCircle, firstSolidHit, reflect } = require('./lib/physics.js');
+const { movePlayer } = require('./lib/move.js');
+const { newCode, advanceCode, inSmoke, fireTurret, deflectShot, pullTarget, applyCoffee } = require('./lib/core2.js');
 
 const PORT = process.env.PORT || 3000;
 const W = 1600, H = 900, PR = 28;           // арена и радиус игрока
@@ -42,7 +44,7 @@ function getRoom(code, mode) {
     rooms.set(code, {
       code, mode: ['1v1', '2v2', 'dm'].includes(mode) ? mode : '1v1', phase: 'lobby', map,
       players: new Map(), shots: [], pending: [], zones: [], walls: [], drops: [],
-      npcs: [], bomb: null, score: [0, 0], roundWinner: null, phaseUntil: 0, winner: null,
+      npcs: [], turrets: [], bomb: null, score: [0, 0], roundWinner: null, phaseUntil: 0, winner: null,
     });
   }
   return rooms.get(code);
@@ -57,8 +59,9 @@ function addPlayer(room, id, name, bot = false) {
     id, name: String(name || 'NPC').slice(0, 16), team, bot,
     char: bot ? CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)] : null,
     ready: bot, x: 0, y: 0, hp: 1, alive: true, ang: 0,
-    input: { u: 0, d: 0, l: 0, r: 0, ax: 0, ay: 0 },
+    input: { u: 0, d: 0, l: 0, r: 0, j: 0, ax: 0, ay: 0 },
     cd: { a: 0, q: 0, e: 0, r: 0 }, st: {}, kills: 0, respawnAt: 0, hold: null,
+    vx: 0, vy: 0, z: 0, vz: 0, hop: 0, grenade: null, grenades: { coffee: false, smoke: false }, turret: null,
   };
   resetEconomy(p);
   room.players.set(id, p);
@@ -71,6 +74,7 @@ function resetEconomy(p, room) { p.money = room?.mode === 'dm' ? 4000 : ECON.sta
 function resetRound(room) {
   room.shots = []; room.pending = []; room.zones = []; room.walls = []; room.drops = [];
   room.npcs = (map.npcs || []).map((n) => ({ id: 'npc' + uid++, kind: n.kind, x: n.x, y: n.y, hp: n.hp || 100, maxHp: n.hp || 100, alive: true, target: null, lastHit: null, nextShot: 0 }));
+  room.turrets = (map.turrets || []).map((v) => ({ ...v, by: null, heat: 0, firingAt: 0, nextShot: 0 }));
   for (const p of room.players.values()) if (!p.alive) p.weapon = pistol(); // умер — остался с пистолетом
   const byTeam = [[], []];
   for (const p of room.players.values()) if (p.team < 2) byTeam[p.team].push(p);
@@ -79,14 +83,15 @@ function resetRound(room) {
     spawn(room, p, i);
     p.hp = c.hp; p.alive = true; p.st = {}; p.cd = { a: 0, q: 0, e: 0, r: 0 };
     p.ang = t === 0 ? 0 : Math.PI;
+    Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, grenade: null, grenades: { coffee: false, smoke: false }, turret: null, hold: null, hasJumped: false, jumpHeld: false, lastLand: -Infinity });
   }));
   if (room.mode === 'dm') {
     let i = 0;
-    for (const p of room.players.values()) { spawn(room, p, i++); p.hp = CHARS[p.char].hp; p.alive = true; p.st = {}; p.cd = { a: 0, q: 0, e: 0, r: 0 }; }
+    for (const p of room.players.values()) { spawn(room, p, i++); p.hp = CHARS[p.char].hp; p.alive = true; p.st = {}; p.cd = { a: 0, q: 0, e: 0, r: 0 }; Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, grenade: null, grenades: { coffee: false, smoke: false }, turret: null, hold: null, hasJumped: false, jumpHeld: false, lastLand: -Infinity }); }
   }
   for (const p of room.players.values()) {
     if (!p.bot || p.weapon.id !== 'pistol') continue;
-    const best = Object.entries(SHOP).filter(([, w]) => w.price <= p.money).sort((x, y) => y[1].price - x[1].price)[0];
+    const best = Object.entries(SHOP).filter(([, w]) => !w.noShop && !w.grenade && w.price <= p.money).sort((x, y) => y[1].price - x[1].price)[0];
     if (best && best[0] !== 'pistol') { p.money -= best[1].price; p.weapon = { ...normalize(best[1]), id: best[0] }; }
   }
   if (room.mode === 'dm') { room.bomb = null; room.phase = 'playing'; room.phaseUntil = now() + 300000; }
@@ -121,11 +126,13 @@ function damage(room, src, tgt, dmg, fx) {
   if (!tgt.alive || has(tgt, 'invuln')) return;
   if (dmg > 0) {
     tgt.hp -= dmg;
+    cancelCode(room, tgt);
     emitFx(room, { k: 'dmg', x: tgt.x, y: tgt.y, v: Math.round(dmg) });
   }
   applyFx(tgt, fx);
   if (tgt.hp <= 0) {
     tgt.alive = false; tgt.hp = 0;
+    if (tgt.turret) { const turret = room.turrets.find((v) => v.id === tgt.turret); if (turret) turret.by = null; tgt.turret = null; }
     if (src && src !== tgt) { src.kills++; src.money = Math.min(ECON.max, src.money + ECON.kill); }
     if (room.mode === 'dm') tgt.respawnAt = now() + 3000;
     if (room.bomb?.state === 'carried' && room.bomb.carrier === tgt.id) {
@@ -173,16 +180,19 @@ function cast(room, p, slot, tx, ty, skillOverride) {
   const ang = Math.atan2(ty - p.y, tx - p.x);
   p.ang = ang;
   switch (s.type) {
-    case 'shot': {
+    case 'hook':
+    case 'shot':
+    default: {
       const n = s.count || 1;
       for (let i = 0; i < n; i++) {
-        const a = n > 1 ? ang - s.spread / 2 + (s.spread * i) / (n - 1) : ang;
+        const a = n > 1 ? ang - (s.spread || 0) / 2 + ((s.spread || 0) * i) / (n - 1) : ang;
         room.shots.push({
           id: uid++, owner: p.id, team: p.team, x: p.x, y: p.y,
-          vx: Math.cos(a) * s.speed, vy: Math.sin(a) * s.speed, r: s.r,
-          left: s.range, dmg: s.dmg, fx: s.fx, emoji: c.emoji,
+          vx: Math.cos(a) * (s.speed || 900), vy: Math.sin(a) * (s.speed || 900), r: s.r || 8,
+          left: s.range || 600, dmg: s.dmg || 0, fx: s.fx, emoji: c.emoji, hook: s.type === 'hook',
         });
       }
+      emitFx(room, { k: 'shot', x: p.x, y: p.y });
       break;
     }
     case 'aoe': {
@@ -233,6 +243,8 @@ function cast(room, p, slot, tx, ty, skillOverride) {
       if (s.stealth) p.st.stealth = now() + s.stealth;
       break;
     }
+    case 'deflect': p.st.deflect = now() + s.ms; break;
+    case 'slowmo': p.st.slowmo = now() + s.ms; p.slowmoR = s.r; break;
     case 'zone':
     case 'trap': {
       room.zones.push({
@@ -275,9 +287,12 @@ function cast(room, p, slot, tx, ty, skillOverride) {
 }
 
 function fire(room, p, tx, ty) {
-  const w = p.weapon;
-  if (!p.alive || has(p, 'stun') || p.cd.a > now()) return;
-  p.cd.a = now() + w.rate;
+  const turret = p.turret && room.turrets.find((v) => v.id === p.turret);
+  const w = turret ? SHOP.turret_mg : p.weapon;
+  const t = now();
+  if (!p.alive || has(p, 'stun') || p.cd.a > t) return;
+  if (turret && !fireTurret(turret, tx, ty, t)) return;
+  p.cd.a = turret && t - p.cd.a < 200 ? p.cd.a + w.rate : t + w.rate;
   p.st.stealth = 0;
   const ang = Math.atan2(ty - p.y, tx - p.x);
   p.ang = ang;
@@ -286,17 +301,20 @@ function fire(room, p, tx, ty) {
     const x = clamp(p.x + Math.cos(ang) * len, 0, fieldW), y = clamp(p.y + Math.sin(ang) * len, 0, fieldH);
     room.pending.push({ x, y, r: Math.max(40, w.r * 3), dmg: w.dmg, fx: w.fx, ignite: w.ignite, lob: true,
       owner: p.id, team: p.team, at: now() + Math.round(1000 * len / w.speed) });
+    emitFx(room, { k: 'shot', x: p.x, y: p.y });
     return;
   }
   const n = w.count || 1;
   for (let i = 0; i < n; i++) {
-    const a = n > 1 ? ang - w.spread / 2 + (w.spread * i) / (n - 1) : ang;
+    const jitter = has(p, 'jitter') ? (Math.random() * 2 - 1) * 20 * Math.PI / 180 : 0;
+    const a = (n > 1 ? ang - w.spread / 2 + (w.spread * i) / (n - 1) : ang) + jitter;
     room.shots.push({
       id: uid++, owner: p.id, team: p.team, x: p.x, y: p.y,
       vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, r: w.r, left: w.range, dmg: w.dmg, fx: w.fx, emoji: w.emoji,
       pierce: w.pierce || 0, bounce: w.bounce || 0, ignite: w.ignite, hit: new Set(),
     });
   }
+  emitFx(room, { k: turret ? 'turret' : 'shot', x: p.x, y: p.y });
 }
 
 function segDist(o, x0, y0, x1, y1) {
@@ -323,7 +341,7 @@ function botThink(room, p) {
     if (bomb.state === 'dropped' && d <= 50) { bomb.state = 'carried'; bomb.carrier = p.id; }
     return;
   }
-  const foes = enemiesOf(room, p);
+  const foes = enemiesOf(room, p).filter((o) => !inSmoke(p, o, room.zones));
   if (!foes.length) { p.input = { u: 0, d: 0, l: 0, r: 0 }; return; }
   const f = foes.reduce((a, b) => (dist(a, p) < dist(b, p) ? a : b));
   const d = dist(f, p), want = p.weapon.range * 0.7;
@@ -345,7 +363,53 @@ function finishRound(room, winner, t) {
   room.roundWinner = winner;
   if (room.score[winner] >= ROUNDS_TO_WIN) room.winner = winner;
   room.phase = 'roundEnd'; room.phaseUntil = t + 2500;
+  emitFx(room, { k: 'round', x: fieldW / 2, y: fieldH / 2 });
   emitFx(room, { k: 'banner', text: room.winner !== null ? `КОМАНДА ${winner + 1} ЗАТАЩИЛА` : `РАУНД КОМАНДЕ ${winner + 1}` });
+}
+
+function sendTerminal(p, payload) {
+  if (!p.bot) io.sockets.sockets.get(p.id)?.emit('terminal', payload);
+}
+function startCode(room, p, t) {
+  const b = room.bomb;
+  if (!b || p.hold || b.active || room.phase !== 'playing' || !p.alive) return;
+  let action = null;
+  if (p.team === 0 && b.state === 'carried' && b.carrier === p.id) {
+    if (inCircle(p, map.sites?.A)) action = 'plantA';
+    else if (inCircle(p, map.sites?.B)) action = 'plantB';
+  } else if (p.team === 1 && b.state === 'planted' && near(p, b, 60)) action = 'defuse';
+  if (!action) return;
+  p.hold = { action, x: p.x, y: p.y, code: newCode(action === 'defuse' ? 6 : 4), index: 0, nextKey: t + 400 };
+  b.active = p.id; b.progress = 0;
+  sendTerminal(p, { code: p.hold.code, index: 0, action });
+}
+function cancelCode(room, p) {
+  if (!p.hold) return;
+  p.hold = null;
+  if (room.bomb?.active === p.id) { room.bomb.active = null; room.bomb.progress = 0; }
+  sendTerminal(p, { code: null });
+}
+function codeInput(room, p, key, t) {
+  const b = room.bomb, task = p.hold;
+  if (!task || !b || b.active !== p.id || !p.alive || Math.hypot(p.x - task.x, p.y - task.y) > 2) { cancelCode(room, p); return; }
+  const result = advanceCode(task, key);
+  if (result === 'ignored') return;
+  if (result === 'fail') { b.progress = 0; sendTerminal(p, { code: task.code, index: 0, action: task.action, result: 'fail' }); return; }
+  b.progress = task.index / task.code.length;
+  if (result === 'ok') { sendTerminal(p, { code: task.code, index: task.index, action: task.action, result: 'ok' }); return; }
+  const action = task.action;
+  cancelCode(room, p);
+  if (action === 'defuse') {
+    b.state = 'defused'; p.money = Math.min(ECON.max, p.money + 300);
+    emitFx(room, { k: 'defuse', x: b.x, y: b.y });
+    emitFx(room, { k: 'banner', text: `${p.name} обезвредил тапок` });
+    finishRound(room, 1, t);
+  } else {
+    b.state = 'planted'; b.carrier = null; b.plantedAt = t; b.x = p.x; b.y = p.y;
+    p.money = Math.min(ECON.max, p.money + 300);
+    emitFx(room, { k: 'plant', x: b.x, y: b.y });
+    emitFx(room, { k: 'banner', text: 'ЯДЕРНЫЙ ТАПОК ЗАПРОГРАММИРОВАН' });
+  }
 }
 
 function bombStep(room, t) {
@@ -367,32 +431,12 @@ function bombStep(room, t) {
     finishRound(room, 0, t);
     return;
   }
-  b.progress = 0;
   for (const p of room.players.values()) {
-    if (!p.alive || !p.input.g || room.phase !== 'playing') { p.hold = null; continue; }
-    let action = null;
-    if (p.team === 0 && b.state === 'carried' && b.carrier === p.id) {
-      if (inCircle(p, map.sites?.A)) action = 'plantA';
-      else if (inCircle(p, map.sites?.B)) action = 'plantB';
-    } else if (p.team === 1 && b.state === 'planted' && near(p, b, 60)) action = 'defuse';
-    if (!action) { p.hold = null; continue; }
-    if (!p.hold || p.hold.action !== action || Math.hypot(p.x - p.hold.x, p.y - p.hold.y) > 2) {
-      p.hold = { action, x: p.x, y: p.y, at: t };
+    if (p.hold && (!p.alive || Math.hypot(p.x - p.hold.x, p.y - p.hold.y) > 2)) cancelCode(room, p);
+    if (p.bot && p.input.g) {
+      if (!p.hold) startCode(room, p, t);
+      else if (t >= p.hold.nextKey) { p.hold.nextKey = t + 400; codeInput(room, p, p.hold.code[p.hold.index], t); }
     }
-    const duration = action === 'defuse' ? 5000 : 3000;
-    b.progress = Math.min(1, (t - p.hold.at) / duration);
-    if (b.progress < 1) continue;
-    p.hold = null; b.progress = 0;
-    if (action === 'defuse') {
-      b.state = 'defused'; p.money = Math.min(ECON.max, p.money + 300);
-      emitFx(room, { k: 'banner', text: `${p.name} обезвредил тапок` });
-      finishRound(room, 1, t);
-    } else {
-      b.state = 'planted'; b.carrier = null; b.plantedAt = t; b.x = p.x; b.y = p.y;
-      p.money = Math.min(ECON.max, p.money + 300);
-      emitFx(room, { k: 'banner', text: `${p.name} заложил тапок` });
-    }
-    break;
   }
 }
 
@@ -401,11 +445,11 @@ function npcStep(room, t) {
   for (const n of room.npcs) {
     if (!n.alive || t < n.nextShot) continue;
     let target = room.players.get(n.lastHit);
-    if (!target?.alive || !near(n, target, gun.range)) {
+    if (!target?.alive || !near(n, target, gun.range) || inSmoke(n, target, room.zones)) {
       target = null; let best = gun.range * gun.range;
       for (const p of room.players.values()) {
         const d = (p.x - n.x) ** 2 + (p.y - n.y) ** 2;
-        if (p.alive && d < best) { best = d; target = p; }
+        if (p.alive && d < best && !inSmoke(n, p, room.zones)) { best = d; target = p; }
       }
     }
     if (!target) continue;
@@ -433,6 +477,7 @@ function step(room, dt) {
   for (const p of room.players.values()) {
     if (room.mode === 'dm' && !p.alive && t >= p.respawnAt) {
       spawn(room, p, Math.floor(Math.random() * 4)); p.hp = CHARS[p.char].hp; p.alive = true; p.st = {};
+      Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, hasJumped: false, jumpHeld: false, lastLand: -Infinity, grenade: null, grenades: { coffee: false, smoke: false }, turret: null });
       p.weapon = pistol(); p.cd = { a: 0, q: 0, e: 0, r: 0 };
     }
     if (!p.alive) continue;
@@ -443,14 +488,17 @@ function step(room, dt) {
     let sp = CHARS[p.char].speed;
     if (has(p, 'slow')) sp *= 0.5;
     if (has(p, 'haste')) sp *= 1.6;
+    if (has(p, 'jitter')) sp *= 1.25;
     // 2D шлёт клавиши u/d/l/r, 3D — вектор mx/my относительно взгляда
     let mx = (p.input.r ? 1 : 0) - (p.input.l ? 1 : 0), my = (p.input.d ? 1 : 0) - (p.input.u ? 1 : 0);
     if (Number.isFinite(p.input.mx) && Number.isFinite(p.input.my)) { mx = clamp(p.input.mx, -1, 1); my = clamp(p.input.my, -1, 1); }
     const m = Math.hypot(mx, my);
     if (m) { mx /= m; my /= m; }
-    const moved = moveCircle(p.x, p.y, mx * sp * dt, my * sp * dt, PR, map.solid, map.low);
-    p.x = clamp(moved.x, PR, fieldW - PR);
-    p.y = clamp(moved.y, PR, fieldH - PR);
+    if (p.turret) { mx = 0; my = 0; p.vx = 0; p.vy = 0; p.input.j = 0; }
+    const moveFx = movePlayer(p, dt, mx, my, sp, map, fieldW, fieldH, PR, t);
+    if (moveFx.jumped) emitFx(room, { k: moveFx.hopped ? 'hop' : 'jump', x: p.x, y: p.y });
+    if (moveFx.landed) emitFx(room, { k: 'land', x: p.x, y: p.y });
+    if (p.hold && Math.hypot(p.x - p.hold.x, p.y - p.hold.y) > 2) cancelCode(room, p);
     for (const w of room.walls) {
       const d = Math.hypot(p.x - w.x, p.y - w.y), min = PR + w.r;
       if (d < min && d > 0) { p.x = w.x + ((p.x - w.x) / d) * min; p.y = w.y + ((p.y - w.y) / d) * min; }
@@ -467,9 +515,17 @@ function step(room, dt) {
   if (room.phase !== 'playing') return;
   npcStep(room, t);
 
+  for (const p of room.players.values()) {
+    if (!p.pull || !p.alive) continue;
+    const caster = room.players.get(p.pull.by);
+    if (!caster?.alive || t >= p.pull.until || !pullTarget(p, caster, dt, map, PR)) p.pull = null;
+  }
+
   // снаряды
   room.shots = room.shots.filter((s) => {
-    const x0 = s.x, y0 = s.y, dx = s.vx * dt, dy = s.vy * dt;
+    let slow = 1;
+    for (const p of room.players.values()) if (p.alive && p.team !== s.team && has(p, 'slowmo') && near(p, s, p.slowmoR || 150)) { slow = 0.25; break; }
+    const x0 = s.x, y0 = s.y, dx = s.vx * dt * slow, dy = s.vy * dt * slow;
     s.x += dx; s.y += dy; s.left -= Math.hypot(dx, dy);
     if (s.left <= 0 || s.x < 0 || s.x > fieldW || s.y < 0 || s.y > fieldH) return false;
     const impact = firstSolidHit(x0, y0, s.x, s.y, s.r, map);
@@ -484,7 +540,9 @@ function step(room, dt) {
     for (const w of room.walls) if (Math.hypot(s.x - w.x, s.y - w.y) < s.r + w.r) return false;
     for (const o of room.players.values()) {
       if (o.alive && o.team !== s.team && !(s.hit && s.hit.has(o.id)) && Math.hypot(o.x - s.x, o.y - s.y) < PR + s.r) {
+        if (has(o, 'deflect')) { deflectShot(s, o); return true; }
         damage(room, room.players.get(s.owner), o, s.dmg, s.fx);
+        if (s.hook && o.alive) o.pull = { by: s.owner, until: t + 250 };
         if (s.hit) s.hit.add(o.id);
         ignite(room, s, s.x, s.y);
         if (s.pierce > 0) { s.pierce--; continue; }
@@ -509,6 +567,12 @@ function step(room, dt) {
     if (b.follow) { const f = room.players.get(b.follow); if (f && f.alive) { b.x = f.x; b.y = f.y; } }
     if (b.at > t) return true;
     const src = room.players.get(b.owner);
+    if (b.kind === 'coffee' || b.kind === 'smoke') {
+      room.zones.push({ id: uid++, kind: b.kind, x: b.x, y: b.y, r: b.kind === 'coffee' ? 110 : 130,
+        until: t + (b.kind === 'coffee' ? 4000 : 8000), team: b.team, owner: b.owner });
+      emitFx(room, { k: b.kind, x: b.x, y: b.y, r: b.kind === 'coffee' ? 110 : 130 });
+      return false;
+    }
     if (src) aoeHit(room, src, b.x, b.y, b.r, b.dmg, b.fx);
     if (src && b.lob) for (const n of room.npcs) if (n.alive && near(n, b, b.r + 24)) damageNpc(room, src, n, b.dmg);
     if (b.ignite) ignite(room, b, b.x, b.y);
@@ -518,9 +582,14 @@ function step(room, dt) {
 
   // зоны и ловушки
   room.zones = room.zones.filter((z) => {
+    if (z.kind === 'coffee') {
+      applyCoffee(room.players.values(), z, t, (o) => emitFx(room, { k: 'feed', text: `${o.name} словил кофеиновый тремор`, x: o.x, y: o.y }));
+      return true;
+    }
     for (const o of room.players.values()) {
       if (!o.alive || o.team === z.team || Math.hypot(o.x - z.x, o.y - z.y) > z.r + PR) continue;
-      if (z.kind === 'zone') applyFx(o, z.fx);
+      if (z.kind === 'smoke') continue;
+      else if (z.kind === 'zone') applyFx(o, z.fx);
       else if (z.kind === 'fire') { if (t >= z.nextHit) damage(room, room.players.get(z.owner), o, z.dmg); }
       else { damage(room, room.players.get(z.owner), o, z.dmg, z.fx); emitFx(room, { k: 'boom', x: z.x, y: z.y, r: 60 }); return false; }
     }
@@ -559,6 +628,7 @@ function snapshot(room) {
       id: p.id, name: p.name, team: p.team, char: p.char, ready: p.ready, bot: p.bot,
       x: Math.round(p.x), y: Math.round(p.y), hp: Math.round(p.hp), alive: p.alive, ang: +p.ang.toFixed(2), kills: p.kills,
       money: p.money, tokens: p.tokens, forging: !!p.forging, weapon: p.weapon,
+      z: Math.round(p.z), hop: p.hop || 0, grenade: p.grenade, grenades: p.grenades, turret: p.turret,
       cd: Object.fromEntries(Object.entries(p.cd).map(([k, v]) => [k, Math.max(0, v - t)])),
       st: Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t])),
     })),
@@ -568,6 +638,7 @@ function snapshot(room) {
     walls: room.walls.map((w) => ({ x: Math.round(w.x), y: Math.round(w.y), r: w.r })),
     drops: room.drops.map((d) => ({ id: d.id, x: Math.round(d.x), y: Math.round(d.y), emoji: d.weapon.emoji, name: d.weapon.name })),
     npcs: room.npcs.map((n) => ({ id: n.id, kind: n.kind, x: Math.round(n.x), y: Math.round(n.y), hp: Math.round(n.hp), maxHp: n.maxHp, alive: n.alive, target: n.target })),
+    turrets: room.turrets.map((v) => ({ id: v.id, by: v.by, heat: Math.max(0, v.heat - t) })),
     bomb: room.bomb && { state: room.bomb.state, x: Math.round(room.bomb.x), y: Math.round(room.bomb.y),
       carrier: room.bomb.carrier, plantedAt: room.bomb.plantedAt, progress: +room.bomb.progress.toFixed(2),
       left: room.bomb.state === 'planted' ? Math.max(0, Math.ceil((room.bomb.plantedAt + 35000 - t) / 1000)) : 0 },
@@ -575,14 +646,15 @@ function snapshot(room) {
 }
 
 let last = now();
-setInterval(() => {
+function runTick() {
   const t = now(), dt = Math.min(0.1, (t - last) / 1000);
   last = t;
   for (const room of rooms.values()) {
     step(room, dt);
     io.to(room.code).emit('state', snapshot(room));
   }
-}, 1000 / TICK);
+}
+if (require.main === module) setInterval(runTick, 1000 / TICK);
 
 io.on('connection', (sock) => {
   let room = null;
@@ -617,6 +689,24 @@ io.on('connection', (sock) => {
     tryStart(room);
   });
   sock.on('input', (inp) => { const p = me(); if (p && inp) p.input = inp; });
+  sock.on('terminal', () => { const p = me(); if (p) startCode(room, p, now()); });
+  sock.on('code', ({ key } = {}) => { const p = me(); if (p) codeInput(room, p, key, now()); });
+  sock.on('turret', () => {
+    const p = me(); if (!p?.alive || room.phase !== 'playing') return;
+    if (p.turret) { const v = room.turrets.find((v) => v.id === p.turret); if (v) v.by = null; p.turret = null; return; }
+    const v = room.turrets.find((v) => !v.by && near(p, v, 50));
+    if (v) { v.by = p.id; p.turret = v.id; p.vx = 0; p.vy = 0; p.x = v.x; p.y = v.y; emitFx(room, { k: 'turret', x: v.x, y: v.y }); }
+  });
+  sock.on('grenade', ({ x, y } = {}) => {
+    const p = me(); if (!p?.alive || room.phase !== 'playing' || !p.grenade || !p.grenades[p.grenade]) return;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    const w = SHOP[p.grenade], ang = Math.atan2(y - p.y, x - p.x);
+    const len = Math.min(w.range, Math.hypot(x - p.x, y - p.y));
+    room.pending.push({ kind: p.grenade, x: clamp(p.x + Math.cos(ang) * len, 0, fieldW), y: clamp(p.y + Math.sin(ang) * len, 0, fieldH),
+      r: p.grenade === 'coffee' ? 110 : 130, dmg: 0, owner: p.id, team: p.team, at: now() + Math.round(1000 * len / w.speed), lob: true });
+    p.grenades[p.grenade] = false;
+    p.grenade = p.grenades.coffee ? 'coffee' : p.grenades.smoke ? 'smoke' : null;
+  });
   sock.on('cast', ({ slot, x, y }) => {
     const p = me();
     if (p && room.phase === 'playing' && ['a', 'q', 'e', 'r'].includes(slot)) cast(room, p, slot, +x || 0, +y || 0);
@@ -627,8 +717,11 @@ io.on('connection', (sock) => {
     let kiosk = false;
     for (const shop of map.shops || []) if (inCircle(p, shop) && shop.items.includes(wid)) kiosk = true;
     const w = kiosk ? KIOSK[wid] || SHOP[wid] : SHOP[wid];
-    if (!w || (!kiosk && room.phase !== 'buy' && room.mode !== 'dm') || p.money < w.price) return;
-    p.money -= w.price; p.weapon = { ...normalize(w), id: wid };
+    if (!w || w.noShop || (!kiosk && room.phase !== 'buy' && room.mode !== 'dm') || p.money < w.price) return;
+    if (w.grenade && p.grenades[wid]) return;
+    p.money -= w.price;
+    if (w.grenade) { p.grenades[wid] = true; p.grenade = wid; }
+    else p.weapon = { ...normalize(w), id: wid };
   });
   sock.on('buyToken', () => {
     const p = me();
@@ -666,6 +759,10 @@ io.on('connection', (sock) => {
   });
   sock.on('disconnect', () => {
     if (!room) return;
+    const p = me(); if (p) {
+      cancelCode(room, p);
+      if (p.turret) { const v = room.turrets.find((v) => v.id === p.turret); if (v) v.by = null; }
+    }
     room.players.delete(sock.id);
     const humans = [...room.players.values()].filter((p) => !p.bot);
     if (!humans.length) rooms.delete(room.code);
@@ -673,4 +770,5 @@ io.on('connection', (sock) => {
   });
 });
 
-server.listen(PORT, () => console.log(`brainrot battle: http://localhost:${PORT}`));
+if (require.main === module) server.listen(PORT, () => console.log(`brainrot battle: http://localhost:${PORT}`));
+module.exports = { step, snapshot, getRoom, addPlayer, cast, codeInput, startCode, map, PR };
