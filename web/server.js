@@ -26,6 +26,8 @@ const server = http.createServer(app);
 const io = new Server(server, { transports: ['websocket'], perMessageDeflate: false });
 
 const rooms = new Map();
+// боты = клише ИИ-стартапов, до 16 символов (сервер режет имя)
+const BOT_NAMES = ['Агент агентов', 'Notion с чатом', 'GPT-обёртка', 'ARR $0', 'Пивот-бот', 'Вейтлист 3 чел', 'Слоп-бот', 'Фиол. градиент', 'Воздухан', 'Сигма-бот', 'Скуф'];
 const now = () => Date.now();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -728,7 +730,7 @@ io.on('connection', (sock) => {
   });
   sock.on('addBot', () => {
     if (!isHost() || room.phase !== 'lobby' || room.players.size >= slots(room)) return;
-    addPlayer(room, 'bot' + uid++, ['Сигма-бот', 'NPC', 'Кринж-бот', 'Скуф'][Math.floor(Math.random() * 4)], true);
+    addPlayer(room, 'bot' + uid++, BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], true);
     tryStart(room);
   });
   sock.on('input', (inp) => {
