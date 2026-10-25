@@ -1,0 +1,4 @@
+nexar-home-network.ru, www.nexar-home-network.ru {
+	encode zstd gzip
+	reverse_proxy http://10.10.0.2:3000
+}
