@@ -2,27 +2,53 @@ const { circleRect } = require('./physics.js');
 
 const JUMP_V = 520, GRAVITY = 1800, HOP_WINDOW = 150;
 const SUB_DT = 1 / 120;
-function axisMove(p, delta, axis, radius, map) {
-  if (!delta) return;
-  const other = axis === 'x' ? 'y' : 'x';
-  const old = p[axis];
-  const steps = Math.max(1, Math.ceil(Math.abs(delta) / radius));
-  const part = delta / steps;
-  for (let j = 0; j < steps; j++) {
-    let next = p[axis] + part;
-    for (const rect of map.solid || []) {
-      if (!circleRect(axis === 'x' ? next : p.x, axis === 'y' ? next : p.y, radius, rect)) continue;
-      next = part > 0 ? Math.min(next, rect[axis] - radius) : Math.max(next, rect[axis] + rect[axis === 'x' ? 'w' : 'h'] + radius);
+// Circle against rectangles: push out along the closest-point normal and drop the
+// velocity into it, so walls slide and corners round off. A position that cannot be
+// untangled (a gap narrower than the player) is rejected and the player stays put.
+function blockers(p, map) {
+  const out = map.solid || [];
+  const low = (map.low || []).filter((rect) => rect.height > 1 || p.z <= (rect.height || 0) * 40);
+  return low.length ? out.concat(low) : out;
+}
+function resolve(p, radius, rects) {
+  let clear = true;
+  for (const rect of rects) {
+    if (!circleRect(p.x, p.y, radius, rect)) continue;
+    clear = false;
+    const cx = Math.max(rect.x, Math.min(p.x, rect.x + rect.w)), cy = Math.max(rect.y, Math.min(p.y, rect.y + rect.h));
+    let nx = p.x - cx, ny = p.y - cy, d = Math.hypot(nx, ny);
+    if (d) { nx /= d; ny /= d; }
+    else {
+      const gaps = [p.x - rect.x, rect.x + rect.w - p.x, p.y - rect.y, rect.y + rect.h - p.y];
+      const side = gaps.indexOf(Math.min(...gaps));
+      nx = side === 0 ? -1 : side === 1 ? 1 : 0; ny = side === 2 ? -1 : side === 3 ? 1 : 0;
+      d = -gaps[side];
     }
-    for (const rect of map.low || []) {
-      if (rect.height > 1 || p.z <= (rect.height || 0) * 40) {
-        if (circleRect(axis === 'x' ? next : p.x, axis === 'y' ? next : p.y, radius, rect))
-          next = part > 0 ? Math.min(next, rect[axis] - radius) : Math.max(next, rect[axis] + rect[axis === 'x' ? 'w' : 'h'] + radius);
-      }
+    const push = radius - d + 1e-6;
+    p.x += nx * push; p.y += ny * push;
+    const into = p.vx * nx + p.vy * ny;
+    if (into < 0) {
+      const speed = Math.hypot(p.vx, p.vy);
+      p.vx -= into * nx; p.vy -= into * ny;
+      // on a corner the speed turns along the tangent instead of dying, so corners round off
+      const corner = (cx === rect.x || cx === rect.x + rect.w) && (cy === rect.y || cy === rect.y + rect.h);
+      const left = Math.hypot(p.vx, p.vy);
+      if (corner && left > 1e-9) { p.vx *= speed / left; p.vy *= speed / left; }
     }
-    p[axis] = next;
   }
-  if (p[axis] === old) p[axis === 'x' ? 'vx' : 'vy'] = 0;
+  return clear;
+}
+function stepMove(p, dx, dy, radius, map) {
+  if (!dx && !dy) return;
+  const rects = blockers(p, map);
+  const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / radius));
+  for (let j = 0; j < steps; j++) {
+    const ox = p.x, oy = p.y;
+    p.x += dx / steps; p.y += dy / steps;
+    let clear = false;
+    for (let pass = 0; pass < 4 && !clear; pass++) clear = resolve(p, radius, rects);
+    if (!clear && rects.some((rect) => circleRect(p.x, p.y, radius, rect))) { p.x = ox; p.y = oy; p.vx = 0; p.vy = 0; return; }
+  }
 }
 
 function movePlayer(p, dt, mx, my, speed, map, width, height, radius, t) {
@@ -68,8 +94,7 @@ function movePlayer(p, dt, mx, my, speed, map, width, height, radius, t) {
       p.vz = nextVz;
       if (p.z <= 0) { p.z = 0; p.vz = 0; p.lastLand = stepTime; landed = true; }
     } else if (stepTime - (p.lastLand ?? -Infinity) > HOP_WINDOW && Math.hypot(p.vx, p.vy) < speed * 1.01) p.hop = 0;
-    axisMove(p, p.vx * SUB_DT, 'x', radius, map);
-    axisMove(p, p.vy * SUB_DT, 'y', radius, map);
+    stepMove(p, p.vx * SUB_DT, p.vy * SUB_DT, radius, map);
     p.x = Math.max(radius, Math.min(width - radius, p.x));
     p.y = Math.max(radius, Math.min(height - radius, p.y));
   }

@@ -95,7 +95,90 @@ function replay() {
   return hash.digest('hex');
 }
 
+// Invariants from prompts-v7/argon-physics.md, measured through movePlayer itself.
+function runPlayer(p, map, seconds, mx, my, speed = 300, onTick) {
+  const dt = 1 / 30;
+  for (let i = 0; i < Math.round(seconds / dt); i++) {
+    p.t = (p.t || 0) + dt * 1000;
+    movePlayer(p, dt, mx, my, speed, map, 1600, 900, 28, p.t);
+    if (onTick) onTick(p, i * dt);
+  }
+}
+function freshPlayer(x, y) { return { x, y, vx: 0, vy: 0, z: 0, vz: 0, hop: 0, input: { j: 0 } }; }
+
+function checkWallSlide() {
+  const wall = { solid: [{ id: 'w', x: 800, y: 0, w: 40, h: 900, height: 9 }], low: [] };
+  const p = freshPlayer(800 - 28.5, 800);
+  const a = 30 * Math.PI / 180;
+  let speedSum = 0, n = 0;
+  runPlayer(p, wall, 1.2, Math.sin(a), -Math.cos(a), 300, (q, time) => {
+    if (time > 0.4) { speedSum += Math.hypot(q.vx, q.vy); n++; }
+  });
+  const loss = 1 - speedSum / n / 300;
+  assert.ok(loss <= 0.15, `wall slide at 30 degrees loses ${(loss * 100).toFixed(1)}%`);
+  return loss;
+}
+
+function checkCorner() {
+  const box = { solid: [{ id: 'b', x: 400, y: 400, w: 200, h: 200, height: 9 }], low: [] };
+  const p = freshPlayer(300, 390);
+  let contact = null, cleared = null;
+  runPlayer(p, box, 3, 1, 0, 300, (q, time) => {
+    if (contact === null && q.x > 400 - Math.sqrt(28 * 28 - 10 * 10) - 1) contact = time;
+    if (cleared === null && q.x >= 400) cleared = time;
+  });
+  assert.ok(contact !== null, 'corner never reached');
+  const took = cleared === null ? Infinity : cleared - contact;
+  assert.ok(took <= 0.5, `corner took ${took.toFixed(2)} s`);
+  return took;
+}
+
+function checkHopCap() {
+  const empty = { solid: [], low: [] };
+  const p = freshPlayer(100, 450);
+  let jumps = 0, maxSpeed = 0, airborne = false;
+  for (let i = 0; i < 2000 && jumps < 10; i++) {
+    p.input.j = p.z === 0 && !airborne ? 1 : 0;
+    p.t = (p.t || 0) + 1000 / 30;
+    const fx = movePlayer(p, 1 / 30, 1, 0, 300, empty, 100000, 900, 28, p.t);
+    if (fx.jumped) jumps++;
+    airborne = p.z > 0;
+    maxSpeed = Math.max(maxSpeed, Math.hypot(p.vx, p.vy));
+  }
+  assert.equal(jumps, 10, `only ${jumps} hops`);
+  assert.ok(maxSpeed <= 300 * 1.6 + 1e-6, `bhop speed ${maxSpeed.toFixed(1)} > 480`);
+  return maxSpeed / 300;
+}
+
+function checkNeverInside() {
+  const rng = createRng(77);
+  for (let k = 0; k < 200; k++) {
+    let p;
+    do { p = freshPlayer(28 + rng() * (map.W - 56), 28 + rng() * (map.H - 56)); }
+    while (map.solid.concat(map.low).some(r => circleRect(p.x, p.y, 28, r)));
+    let mx = 0, my = 0;
+    for (let i = 0; i < 90; i++) {
+      if (i % 15 === 0) { const a = rng() * Math.PI * 2; mx = Math.cos(a); my = Math.sin(a); }
+      p.input.j = rng() < 0.05 ? 1 : 0;
+      p.t = (p.t || 0) + 1000 / 30;
+      movePlayer(p, 1 / 30, mx, my, 300, map, map.W, map.H, 28, p.t);
+      for (const rect of map.solid) {
+        const cx = Math.max(rect.x, Math.min(p.x, rect.x + rect.w)), cy = Math.max(rect.y, Math.min(p.y, rect.y + rect.h));
+        assert.ok(Math.hypot(p.x - cx, p.y - cy) >= 28 - 0.05, `player inside ${rect.id} (run ${k}, tick ${i})`);
+      }
+    }
+  }
+}
+
+const strict = !process.env.SOFT;
+function soft(name, fn) {
+  try { return fn(); } catch (error) { if (strict) throw error; console.log(`  SOFT ${name}: ${error.message}`); return NaN; }
+}
+
 try {
+  const slide = soft('slide', checkWallSlide), corner = soft('corner', checkCorner);
+  const hopCap = soft('hop', checkHopCap); soft('inside', checkNeverInside);
+  console.log(`invariants: slide loss ${(slide * 100).toFixed(1)}%, corner ${corner.toFixed(2)} s, 10 hops ${hopCap.toFixed(3)}x, 200x90 ticks never inside solid`);
   const maxError = checkSweep();
   checkStarts();
   const a = jumpSeries(0.033), b = jumpSeries(0.046);

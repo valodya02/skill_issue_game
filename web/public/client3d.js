@@ -447,9 +447,9 @@ window.GAME3D = {
     ray.set(camera.position, DIR); ray.far = d - 0.3;
     return ray.intersectObject(mapGroup, true).length === 0;
   },
-  // экран → мир сервера (px), прицел на высоте груди
+  // экран → мир сервера (px), прицел на высоте груди; в FPS точка далеко, чтобы отставание снапшота почти не сбивало угол
   pick(cx, cy) {
-    if (this.fps) { const me = myPos(); if (me) return { x: me.x + Math.cos(yaw) * 600, y: me.y + Math.sin(yaw) * 600 }; }
+    if (this.fps) { const me = myPos(); if (me) return { x: me.x + Math.cos(yaw) * 4000, y: me.y + Math.sin(yaw) * 4000 }; }
     ray.far = Infinity;
     ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1);
     ray.setFromCamera(ndc, camera);

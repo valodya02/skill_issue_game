@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.join(__dirname, '../public/post3d.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../public/post3d.js'), 'utf8').replace(/\r\n/g, '\n');
 const shader = source.match(/export const FRAGMENT_SHADER = \/\* glsl \*\/ `([\s\S]*?)`;/)?.[1];
 assert.ok(shader && shader.includes('void main()'), 'GLSL source must assemble as a string');
 assert.ok(!shader.includes('${'), 'GLSL template must not contain substitutions');
