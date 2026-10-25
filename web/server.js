@@ -18,6 +18,8 @@ const CHAR_IDS = Object.keys(CHARS);
 
 const app = express();
 app.use('/models', express.static(path.join(__dirname, 'public', 'models'), { maxAge: '7d' }));
+app.use('/music', express.static(path.join(__dirname, 'public', 'music'), { maxAge: '7d' }));
+app.use('/sfx', express.static(path.join(__dirname, 'public', 'sfx'), { maxAge: '7d' }));
 app.use(express.static(path.join(__dirname, 'public')));
 // three и модели не меняются между выкатками: неделя кэша, второй заход без мегабайта загрузки
 app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build'), { maxAge: '7d', immutable: true }));

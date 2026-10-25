@@ -13,8 +13,9 @@
     ? new URL('sfx/', document.currentScript.src).href : 'sfx/';
   var listener = { x: 800, y: 450 };
   var level = 0.8;
-  var musicWanted = false;
+  var musicWanted = true;
   var clock = null;
+  var track = null;
   var nextBeat = 0;
   var beatNumber = 0;
 
@@ -44,7 +45,7 @@
       }
     }
     if (ctx.state === 'suspended') ctx.resume().catch(function () {});
-    if (musicWanted && !clock) startMusic();
+    if (musicWanted) startMusic();
   }
 
   function loadSamples() {
@@ -302,8 +303,19 @@
     }
   }
 
+  // фон: CC0 трек music/battle.mp3 в цикле; не загрузился, тогда синтезированный бит
   function startMusic() {
     if (!ctx || clock) return;
+    if (track !== false) {
+      if (!track) {
+        track = new root.Audio(new URL('../music/battle.mp3', sampleBase).href);
+        track.loop = true;
+        track.addEventListener('error', function () { track = false; startMusic(); });
+      }
+      track.volume = clamp(level * 0.3, 0, 1);
+      track.play().catch(function () {});
+      return;
+    }
     nextBeat = ctx.currentTime + 0.05;
     beatNumber = 0;
     clock = setInterval(tick, 80);
@@ -319,6 +331,7 @@
       } else {
         clearInterval(clock);
         clock = null;
+        if (track) track.pause();
         voices.slice().forEach(function (v) { if (v.music) stopVoice(v); });
       }
     },
@@ -329,6 +342,7 @@
       if (!Number.isFinite(value)) return;
       level = clamp(value, 0, 1);
       if (master) master.gain.value = level;
+      if (track) track.volume = clamp(level * 0.3, 0, 1);
     }
   };
 })(this);

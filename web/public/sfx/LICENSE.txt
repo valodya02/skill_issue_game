@@ -2,3 +2,5 @@ Snake's Authentic Gun Sounds, F8 Studios
 https://f8studios.itch.io/snakes-authentic-gun-sounds
 Commercial use allowed, credit appreciated. Credit: "Gun sounds by F8 Studios (Snake's Authentic Gun Sounds)".
 Files renamed, content unchanged.
+
+music/battle.mp3: "Massive Battle" by Eldritch Grim, CC0 1.0, https://opengameart.org/node/158915 (massive_hunt.wav, сжат в mp3 96 кбит/с)
