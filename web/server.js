@@ -17,8 +17,10 @@ const TICK = 30, ROUNDS_TO_WIN = 4, BUY_MS = 15000, ROUND_MS = 100000;
 const CHAR_IDS = Object.keys(CHARS);
 
 const app = express();
+app.use('/models', express.static(path.join(__dirname, 'public', 'models'), { maxAge: '7d' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build')));
+// three и модели не меняются между выкатками: неделя кэша, второй заход без мегабайта загрузки
+app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build'), { maxAge: '7d', immutable: true }));
 const server = http.createServer(app);
 // только websocket: без long-polling и апгрейда, сжатие выкл (снапшоты мелкие, CPU дороже)
 const io = new Server(server, { transports: ['websocket'], perMessageDeflate: false });
