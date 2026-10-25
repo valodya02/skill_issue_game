@@ -1,0 +1,23 @@
+[Unit]
+Description=Skill Issue Arena (Node.js + WebSocket)
+Wants=network-online.target wg-quick@wg0.service
+After=network-online.target wg-quick@wg0.service
+
+[Service]
+Type=simple
+User=nexar
+Group=nexar
+WorkingDirectory=/home/nexar/Game_issue/webgame
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=10.10.0.2
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
