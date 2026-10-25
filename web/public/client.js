@@ -143,9 +143,9 @@ const infoOf = new Map();
 sock.on('state', (s) => {
   // зал шлёт имя, перса и команду не в каждом кадре, пустые st, z и hop опускает
   s.players = s.players.filter((p) => {
-    if (p.char) infoOf.set(p.id, { name: p.name, team: p.team, char: p.char }); else Object.assign(p, infoOf.get(p.id));
+    if ('name' in p) infoOf.set(p.id, { name: p.name, team: p.team, char: p.char }); else Object.assign(p, infoOf.get(p.id));
     p.st ||= {}; p.z ||= 0; p.hop ||= 0;
-    return p.char;
+    return infoOf.has(p.id) && (s.phase === 'lobby' || p.char);  // без перса в бою не рисуем
   });
   for (const p of s.players) {
     if (p.weapon) weaponOf.set(p.id, p.weapon); else p.weapon = weaponOf.get(p.id);

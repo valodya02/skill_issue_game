@@ -135,7 +135,7 @@ function tryStart(room, force = false) {
   if (room.mode === 'zal') {
     // зал не ждёт полной комнаты и чужих «готов»: стартует хост, без персонажа дадим случайного
     if (!force || ps.length < 2) return;
-    for (const p of ps) { p.char = p.char || CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; p.ready = true; }
+    for (const p of ps) { p.char = p.char || CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; p.ready = true; p.infoUntil = now() + 3000; }
   } else if (ps.length !== slots(room) || !ps.every((p) => p.char && p.ready)) return;
   room.score = [0, 0]; room.winner = null;
   for (const p of ps) { resetEconomy(p, room); p.alive = true; }
@@ -688,10 +688,11 @@ function stOf(p, t, lean) {
   const st = Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t]));
   return lean && !Object.keys(st).length ? {} : { st };
 }
-const slim = (room) => room.mode === 'zal' && room.phase !== 'lobby';
+const slim = (room) => room.mode === 'zal';
 
-function snapshot(room) {
-  const t = now(), lean = slim(room), info = !((room.sends = (room.sends || 0) + 1) % 15);
+// all: полный кадр одному новичку, кэш оружия не трогает
+function snapshot(room, all = false) {
+  const t = now(), lean = slim(room) && !all, info = !((room.sends = (room.sends || 0) + 1) % 15);
   return {
     phase: room.phase, mode: room.mode, score: room.score, winner: room.winner,
     timer: ['buy', 'playing'].includes(room.phase) ? Math.max(0, Math.ceil(((room.bomb?.state === 'planted' ? room.bomb.plantedAt + 35000 : room.phaseUntil) - t) / 1000)) : 0,
@@ -702,7 +703,7 @@ function snapshot(room) {
       ...(lean ? {} : { ready: p.ready, bot: p.bot }),
       x: Math.round(p.x), y: Math.round(p.y), hp: Math.round(p.hp), alive: p.alive, ang: +p.ang.toFixed(2), kills: p.kills,
       // оружие с 3D-моделью весит ~300 байт: шлём только при смене, клиент держит кэш
-      ...(room.sentW.get(p.id) !== p.weapon && room.sentW.set(p.id, p.weapon) ? { weapon: p.weapon } : {}),
+      ...(all || (room.sentW.get(p.id) !== p.weapon && room.sentW.set(p.id, p.weapon)) ? { weapon: p.weapon } : {}),
       ...(lean && !p.z ? {} : { z: Math.round(p.z) }), ...(lean && !p.hop ? {} : { hop: p.hop || 0 }),
       ...(lean ? {} : full(p, t)),
       ...stOf(p, t, lean),
@@ -729,7 +730,8 @@ function runTick() {
     // volatile: забитый сокет пропускает кадр, а не копит очередь из старых снапшотов
     // зал: 30 человек × 30 Гц забивают канал, шлём каждый второй тик
     // больше 40 человек: каждый третий (10 Гц), клиент сглаживает
-    if (room.mode === 'zal' && (room.tick = (room.tick || 0) + 1) % (room.players.size > 40 ? 3 : 2)) continue;
+    // лобби зала: 5 Гц, там только список входящих
+    if (room.mode === 'zal' && (room.tick = (room.tick || 0) + 1) % (room.phase === 'lobby' ? 6 : room.players.size > 40 ? 3 : 2)) continue;
     io.to(room.code).volatile.emit('state', snapshot(room));
     if (room.fxq?.length) { io.to(room.code).volatile.emit('fxs', room.fxq); room.fxq = []; }
     // 'me' не volatile: сразу за снапшотом сокет занят, и volatile выкидывал его всегда
@@ -766,11 +768,13 @@ io.on('connection', (sock) => {
       np.char = CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; np.ready = true;
       resetEconomy(np, room); np.alive = false; np.respawnAt = 0;
     }
-    room.sentW.clear();  // новичок должен получить оружие всех
-    np.infoUntil = now() + 3000; room.sends = -1;  // и имена всех в ближайшем снапшоте
+    // новичок должен получить оружие и имена всех: в зале полным кадром ему одному, иначе 100 входов = 100 тяжёлых рассылок
+    if (room.mode !== 'zal') room.sentW.clear();
+    np.infoUntil = now() + 3000;
     const heat = { 50: 'В ЗАЛЕ 50. СЕРВЕР ПОТЕЕТ', 75: 'В ЗАЛЕ 75. VPS ЗВОНИТ МАМЕ', 100: 'В ЗАЛЕ 100. SO OVER, СЕРВЕР В ОГНЕ' }[room.players.size];
     if (room.mode === 'zal' && heat && !sub) emitFx(room, { k: 'banner', text: heat });
     sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id, skills: SKILLS });
+    if (room.mode === 'zal') sock.emit('state', snapshot(room, true));
   });
   sock.on('pick', (cid) => { const p = me(); if (p && CHARS[cid] && room.phase === 'lobby') { p.char = cid; tryStart(room); } });
   sock.on('ready', () => { const p = me(); if (p && p.char) { p.ready = !p.ready; tryStart(room); } });

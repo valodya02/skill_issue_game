@@ -52,7 +52,7 @@ const pct = (xs, q) => { const s = [...xs].sort((a, b) => a - b); return s.lengt
     console.log(`host: в зале ${first.state.players.length}, жму старт`);
     first.socket.emit('start');
   }
-  await until(() => cs.every((c) => c.state?.phase === 'playing'), 90000, 'playing');
+  await until(() => cs.every((c) => c.state?.phase === 'playing'), 30000, 'playing').catch((e) => { console.error('фазы', cs.map((c) => (c.state?.phase || '-') + (c.drops ? '!' : '')).join(','), 'игроков', first.state?.players.length); throw e; });
   for (const c of cs) c.measure = true;
   const t0 = performance.now();
   while (performance.now() - t0 < SEC * 1000) {
