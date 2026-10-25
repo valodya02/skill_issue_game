@@ -8,7 +8,7 @@
   var voices = [];
   var samples = Object.create(null);
   var sampleNames = ['shot_22', 'shot_556', 'shot_762', 'shot_54r', 'shot_double',
-    'reload_ar', 'reload_ak', 'reload_pump', 'bolt_mosin', 'rack_pistol'];
+    'reload_ar', 'reload_ak', 'reload_pump', 'bolt_mosin', 'rack_pistol', 'meme_bruh', 'meme_airhorn'];
   var sampleBase = typeof document !== 'undefined' && document.currentScript
     ? new URL('sfx/', document.currentScript.src).href : 'sfx/';
   var listener = { x: 800, y: 450 };
@@ -149,6 +149,7 @@
   }
 
   function sampleFor(name, opts) {
+    if (name === 'kill' && opts.meme) return samples['meme_' + opts.meme] || null;
     if (name !== 'shot' && name !== 'reload') return null;
     var weapon = root.WEAPONS && root.WEAPONS.SHOP && root.WEAPONS.SHOP[opts.weapon];
     var selected = opts.sample || (weapon && weapon.sfx && weapon.sfx[name]);

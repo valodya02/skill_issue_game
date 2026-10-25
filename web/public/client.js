@@ -176,7 +176,12 @@ sock.on('fx', (f) => {
     }, { p: null, d: Infinity });
     const weapon = shooter?.d < 60 ? (f.k === 'turret' && shooter.p.turret ? 'turret_mg' : shooter.p.weapon?.id) : null;
     sound(f.k === 'turret' ? 'shot' : f.k, f.x, f.y, weapon);
-  } else if (['boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'plant', 'defuse', 'kill', 'round'].includes(f.k)) sound(f.k, f.x, f.y);
+  } else if (f.k === 'kill') {
+    // мем: своё убийство airhorn, своя смерть bruh, чужие обычным тоном
+    const myName = S?.players.find((p) => p.id === meta?.you)?.name;
+    const meme = myName && f.by === myName ? 'airhorn' : myName && f.who === myName ? 'bruh' : null;
+    if (window.SFX?.play) window.SFX.play('kill', { x: f.x, y: f.y, meme });
+  } else if (['boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'plant', 'defuse', 'round'].includes(f.k)) sound(f.k, f.x, f.y);
   if (f.k === 'feed') toast(esc(f.text));
   if (f.k === 'banner') banner = { text: f.text, until: t + 1800 };
   if (f.k === 'dmg') fxs.push({ k: 'txt', x: f.x, y: f.y - 30, text: '-' + f.v, color: '#ff6b6b', t, life: 700 });

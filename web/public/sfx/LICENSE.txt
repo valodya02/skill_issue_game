@@ -4,3 +4,4 @@ Commercial use allowed, credit appreciated. Credit: "Gun sounds by F8 Studios (S
 Files renamed, content unchanged.
 
 music/battle.mp3: "Massive Battle" by Eldritch Grim, CC0 1.0, https://opengameart.org/node/158915 (massive_hunt.wav, сжат в mp3 96 кбит/с)
+meme_bruh.mp3, meme_airhorn.mp3: мем-звуки из Downloads Саши (18.10), источник и лицензия неизвестны; оставлены по его решению 25.10, заменить на CC0 до публичного релиза.
