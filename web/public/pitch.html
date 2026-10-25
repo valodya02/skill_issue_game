@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brainrot Strike: питч</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Russo+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pitch.css">
+</head>
+<body>
+<div id="stage">
+<div id="hint">← → пробел · F полный экран · клик по «пуск»</div>
+
+<!-- 1. обложка: PowerPoint 2003 поверх Bliss -->
+<section class="scr bliss" data-name="Обложка" style="align-items:center;justify-content:center">
+  <div class="win" style="width:1500px">
+    <div class="tbar"><span>Microsoft PowerPoint: brainrot_strike_FINAL_v2_точно_финал.ppt</span><i>X</i></div>
+    <div style="padding:80px 64px;display:flex;flex-direction:column;align-items:center;gap:28px;background:#fff">
+      <p class="wa lat" style="font-size:170px">BRAINROT-STRIKE</p>
+      <p style="font:400 44px 'Russo One',sans-serif;color:#0a246a">шутер, который понимаешь без инструкции</p>
+      <p style="font-size:26px;color:#666">Alex Eval Corp + Mark &amp; Corp · вайбкодинг ФКН ВШЭ · 2008 (технически 2026)</p>
+      <button class="xpbtn next" style="margin-top:20px">Начать показ (F5)</button>
+    </div>
+  </div>
+  <p class="lat" style="position:absolute;right:220px;top:170px;font-size:72px;color:#fff200;background:#e0201b;padding:6px 26px;transform:rotate(12deg);border:4px solid #fff">BETA!</p>
+</section>
+
+<!-- 2. ошибка XP -->
+<section class="scr" data-name="Предупреждение" style="background:#3a6ea5;align-items:center;justify-content:center">
+  <div class="win" style="width:1200px">
+    <div class="tbar"><span>Предупреждение системы</span><i>X</i></div>
+    <div style="padding:56px 64px;display:flex;gap:40px;align-items:flex-start">
+      <div style="width:120px;height:120px;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd34a,#e8a800);border:4px solid #8a5a00;display:flex;align-items:center;justify-content:center;font:700 80px Tahoma">!</div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <p style="font-size:40px;font-weight:700">Обнаружена презентация без ИИ-слопа.</p>
+        <p style="font-size:30px;line-height:1.4">В ней нет фиолетового градиента, слова «агентный» и графика «хоккейная клюшка». Ваша система может быть не готова. Продолжить?</p>
+      </div>
+    </div>
+    <div style="padding:0 64px 48px;display:flex;gap:24px;justify-content:flex-end">
+      <button class="xpbtn next">Да</button><button class="xpbtn next">Тоже да</button><button class="xpbtn" id="runaway">Отмена</button>
+    </div>
+  </div>
+</section>
+
+<!-- 3. бинго ИИ-стартапов: кликом зачёркивать -->
+<section class="scr" data-name="Бинго слопа" style="background:linear-gradient(135deg,#6a11cb 0%,#2575fc 100%);color:#fff">
+  <p class="h2" style="color:#fff">Бинго ИИ-стартапа 2026 <span style="font-size:36px;opacity:.8">(жюри, зачёркивайте кликом)</span></p>
+  <div class="bento bingo" style="grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr 1fr;color:var(--ink)">
+    <div class="cell"><span class="tag">продукт</span><h3>Агент, который управляет агентами</h3></div>
+    <div class="cell"><span class="tag">продукт</span><h3>Notion, но с чатом</h3></div>
+    <div class="cell" style="grid-row:span 2;background:#14213d;color:#fff"><span class="tag">метрика</span><h3 style="font-size:64px">ARR $0</h3><p>но график растёт хоккейной клюшкой, если перевернуть экран</p></div>
+    <div class="cell"><span class="tag">трекшн</span><h3>Вейтлист: 3 человека, двое из команды</h3></div>
+    <div class="cell"><span class="tag">дизайн</span><h3>Фиолетовый градиент</h3><p>как на этом слайде, да</p></div>
+    <div class="cell"><span class="tag">питч</span><h3>«Мы Uber для промптов»</h3></div>
+    <div class="cell"><span class="tag">код</span><h3>«Код мы не читали, это принцип»</h3></div>
+    <div class="cell"><span class="tag">2026</span><h3>Воздухан</h3><p>слова «AGI к пятнице», дела «кнопка не жмётся»</p></div>
+    <div class="cell"><span class="tag">стратегия</span><h3>Пивот на третий день</h3></div>
+    <div class="cell"><span class="tag">ответ ИИ</span><h3>«You're absolutely right!»</h3></div>
+    <div class="cell" style="background:#ffd23f"><span class="tag">мы</span><h3>Ни одной клетки. Мы сделали игру</h3></div>
+  </div>
+</section>
+
+<!-- 4. польза: «Без инструкции» -->
+<section class="scr" data-name="Без инструкции" style="background:#fbf8ee">
+  <p class="h2" style="color:#0a246a">Тема: «Без инструкции»</p>
+  <p style="font-size:34px;color:#6a6450">Туториала нет. Мануала нет. Если вы не разобрались за 30 секунд, проиграли мы.</p>
+  <div style="display:flex;gap:16px;align-items:stretch;flex:1">
+    <div class="cell" style="flex:1;background:#fff;border:3px solid #3a6ea5"><span class="tag">0 с</span><h3>Открыл ссылку</h3><p>браузер, без установки и регистрации</p></div>
+    <div class="cell" style="flex:1;background:#fff;border:3px solid #3a6ea5"><span class="tag">10 с</span><h3>Ввёл ник</h3><p>или остался Сигмой с номером</p></div>
+    <div class="cell" style="flex:1;background:#fff;border:3px solid #3a6ea5"><span class="tag">20 с</span><h3>Первый выстрел</h3><p>подсказки прямо в HUD, а не в PDF</p></div>
+    <div class="cell" style="flex:1;background:#ffd23f;border:3px solid #8a5a00"><span class="tag">30 с</span><h3>Первый фраг</h3><p>первый успех. Дальше вас не остановить</p></div>
+  </div>
+  <div style="background:#14213d;color:#fff;border-radius:16px;padding:36px 48px">
+    <p style="font-size:44px;font-weight:700;color:#ffe27a">Онбординг = сама игра. Через пять минут вы его пройдёте все вместе.</p>
+  </div>
+</section>
+
+<!-- 5. кейноут: три вещи -->
+<section class="scr" data-name="Три в одном" style="background:radial-gradient(circle at 50% 40%,#3a3a3a 0%,#000 70%);color:#fff;align-items:center;justify-content:center;gap:60px">
+  <p style="font-size:40px;color:#aaa">Сегодня мы покажем три революционных продукта</p>
+  <div style="display:flex;gap:120px">
+    <p class="reveal" style="font:400 96px 'Russo One',sans-serif">Шутер.</p>
+    <p class="reveal" style="font:400 96px 'Russo One',sans-serif">Мем.</p>
+    <p class="reveal" style="font:400 96px 'Russo One',sans-serif">Симулятор стартапа.</p>
+  </div>
+  <p class="reveal" style="font-size:44px;color:#ffd23f">Шутер. Мем. Симулятор. Понимаете? Это одна игра.</p>
+</section>
+
+<!-- 6. ростер -->
+<section class="scr" data-name="Персонажи" style="background:#0d0b14;color:#f3eefc">
+  <p class="h2" style="color:#ffd23f">Выбери бойца</p>
+  <div class="bento" style="grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr">
+    <div class="cell" style="grid-row:span 2;background:linear-gradient(160deg,#2b2340,#1a1626);border:3px solid #ffd23f"><span class="tag" style="color:#ffd23f">главный босс</span><h3 style="font-size:64px">Стартапер</h3><p>Воздушка, кофейная граната, «Питч инвестору» на скорость. Ульта: РАУНД ИНВЕСТИЦИЙ всей команде.</p><p style="color:#a79cbf">Кричит «Вайб-кодинг, и мы в миллионах долларов!», пока его убивают</p></div>
+    <div class="cell" style="background:#1a1626;border:2px solid #3a3150"><h3>Донатный стример</h3><p>Донат 5000 и ульта «ЧАТ, МЫ В ЭФИРЕ»</p></div>
+    <div class="cell" style="background:#1a1626;border:2px solid #3a3150"><h3>Нэо с района</h3><p>отбивает пули, ульта «СЛОУМО ДВОРА»</p></div>
+    <div class="cell" style="background:#1a1626;border:2px solid #3a3150"><h3>Джедай с Авито</h3><p>б/у меч, «Отражение по гарантии», торг уместен</p></div>
+    <div class="cell" style="background:#1a1626;border:2px solid #3a3150"><h3>Контртеррорист Гоша</h3><p>щиты на вход, дефает тапок на 30% быстрее</p></div>
+  </div>
+</section>
+
+<!-- 7. стена мемов 2026 (воссозданы текстом, без чужих картинок) -->
+<section class="scr" data-name="Мемы 2026" style="background:#f4f1e8">
+  <p class="h2">Внутренний стандарт качества: мемы 2026</p>
+  <div class="bento" style="grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr">
+    <div class="meme" style="background:#111;color:#fff"><p class="impact">вайбкодить легко</p><div style="height:4px;background:#fff"></div><p class="impact" style="color:#ff4f4f">вайб-дебажить больно</p></div>
+    <div class="meme" style="transform:rotate(-2deg)"><p class="big">Можно.</p><p class="big" style="color:#e0201b">А зачем?</p><p style="font-size:22px">реакция жюри на 40-й ИИ-ассистент</p></div>
+    <div class="meme" style="background:#ffd23f;align-items:center;text-align:center"><p class="lat" style="font-size:150px;line-height:1">6-7</p><p style="font-size:24px">столько раз за хакатон упал сервер (если считать честно, больше)</p></div>
+    <div class="meme"><p style="font-size:24px;color:#666">нейроозвучка, 2026:</p><p class="big">«Да ты шуешь!»</p><p style="font-size:22px">наш Codex, когда видит наш код</p></div>
+    <div class="meme" style="grid-column:span 2;flex-direction:row;align-items:center;gap:32px">
+      <div style="flex:none;width:200px;height:200px;border-radius:50%;background:#7b5a3a;border:6px solid #111;display:flex;align-items:center;justify-content:center;font-size:120px">🦉</div>
+      <div style="display:flex;flex-direction:column;gap:10px"><p class="big">Сова на скакалке</p><p style="font-size:28px;line-height:1.35">Официальный прогноз нашего живого демо. Сервер стоит в рюкзаке Володи. Что может пойти не так</p></div>
+    </div>
+    <div class="meme" style="background:#14213d;color:#fff"><p style="font-size:24px;color:#9fb3d6">Хабр, 2026:</p><p class="big" style="font-size:42px">ты больше не писатель кода, а воспитатель нейронок</p></div>
+    <div class="meme" style="background:#2e2e2e;color:#7CFC00;font-family:'Courier New',monospace"><p style="font-size:26px">&gt; мозг мухи играет в Doom</p><p style="font-size:26px">&gt; мы: шесть мозгов</p><p style="font-size:26px">&gt; сделали шутер</p><p style="font-size:26px">&gt; счёт равный_</p></div>
+  </div>
+</section>
+
+<!-- 8. команда -->
+<section class="scr" data-name="Команда" style="background:linear-gradient(180deg,#0a246a 0%,#3a6ea5 100%);color:#fff">
+  <p class="h2">Штатное расписание AEC</p>
+  <div class="bento" style="grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;color:var(--ink)">
+    <div class="cell" style="background:var(--beige);border:3px solid #ffd54a"><span class="tag">Саша</span><h3>Chief Vibe Officer</h3><p>Жмёт Accept All профессионально. Дебафф: новая идея каждые 15 минут</p></div>
+    <div class="cell" style="background:var(--beige);border:3px solid #ffd54a"><span class="tag">Володя</span><h3>Head of Prod</h3><p>Прод это его ноутбук. Закрыл крышку, игра закончилась</p></div>
+    <div class="cell" style="background:var(--beige)"><span class="tag">Марик</span><h3>Prompt Whisperer</h3><p>С агентом вежливее, чем с людьми. «You're absolutely right!» слышит чаще, чем «привет»</p></div>
+    <div class="cell" style="background:var(--beige)"><span class="tag">Лаура</span><h3>Vibe QA</h3><p>Тесты на код пишет ИИ. Тест на кринж проходит только через неё</p></div>
+    <div class="cell" style="background:var(--beige)"><span class="tag">Вадим</span><h3>Lowpoly Lord</h3><p>Персонажи из пары сотен полигонов и чистой веры</p></div>
+    <div class="cell" style="background:var(--beige)"><span class="tag">Юля</span><h3>Вайб-скульптор</h3><p>Бабка-NPC выглядит как твоя бабка. Я тебя могну, говорит бабка</p></div>
+  </div>
+</section>
+
+<!-- 9. ИИ -->
+<section class="scr" data-name="Как мы использовали ИИ" style="background:#fbf8ee;color:#14213d">
+  <p class="h2" style="color:#0a246a">Как мы использовали ИИ <span style="font-size:30px;color:#6a6450">(10% оценки, считали калькулятором)</span></p>
+  <div style="display:flex;gap:16px;align-items:center">
+    <div class="cell" style="flex:1;background:linear-gradient(180deg,#fff,#dce8f8);border:2px solid #3a6ea5"><h3>Claude Code</h3><p>режет идею на задачи</p></div><b style="font-size:60px;color:#f08a00">→</b>
+    <div class="cell" style="flex:1;background:linear-gradient(180deg,#fff,#dce8f8);border:2px solid #3a6ea5"><h3>Codex</h3><p>сервер, оружие, звук</p></div><b style="font-size:60px;color:#f08a00">→</b>
+    <div class="cell" style="flex:1;background:linear-gradient(180deg,#fff,#dce8f8);border:2px solid #3a6ea5"><h3>Gemini</h3><p>физика и 3D</p></div><b style="font-size:60px;color:#f08a00">→</b>
+    <div class="cell" style="flex:1;background:linear-gradient(180deg,#fff,#dce8f8);border:2px solid #3a6ea5"><h3>Боты-тестеры</h3><p>играют друг с другом, пока мы едим пиццу</p></div>
+  </div>
+  <div style="background:#14213d;border-radius:16px;padding:48px 56px;margin-top:auto">
+    <p style="font-size:30px;color:#9fb3d6">последний шаг конвейера остался за людьми:</p>
+    <p style="font-size:64px;font-weight:700;color:#ffe27a">ИИ пишет код. Люди решают, смешно ли.</p>
+  </div>
+</section>
+
+<!-- 10. зал славы -->
+<section class="scr" data-name="Зал славы" style="background:linear-gradient(180deg,#2b2b33,#121216);color:#f2f2f2">
+  <p class="wa gold" style="font-size:88px;font-family:'Russo One',sans-serif">ЗАЛ СЛАВЫ ВАЙБКОДИНГА</p>
+  <div class="bento" style="grid-template-columns:repeat(3,1fr)">
+    <div class="cell" style="background:#1f1f27;border:2px solid #ffc83d"><span class="tag" style="color:#ffc83d">февраль 2025</span><h3>Рождён вайбкодинг: жми Accept All, дифф не читай</h3><p style="color:#b8b8c6">Мы: дифф читали. Если он был короче нашего терпения</p></div>
+    <div class="cell" style="background:#1f1f27;border:2px solid #ffc83d"><span class="tag" style="color:#ffc83d">июль 2025</span><h3>ИИ-агент снёс продовую базу посреди code freeze</h3><p style="color:#b8b8c6">Мы: наш прод нельзя удалить. Его можно только уронить</p></div>
+    <div class="cell" style="background:#1f1f27;border:2px solid #ffc83d"><span class="tag" style="color:#ffc83d">2026</span><h3>Слово «вайбкодинг» объявили устаревшим</h3><p style="color:#b8b8c6">Мы: отлично, значит у нас ретро. Отсюда и 2008</p></div>
+  </div>
+  <p style="font-size:22px;color:#8a8a98">Источники: knowyourmeme.com/memes/vibe-coding · eweek.com, «AI Agent Wipes Production Database» · ru.hexlet.io, «Год вайб-кодинга»</p>
+</section>
+
+<!-- 11. финал: завершение работы, кнопки ведут в игру -->
+<section class="scr" data-name="Играть" id="final" style="background:linear-gradient(180deg,#5a7edc 0%,#2e4fb0 100%);color:#fff;align-items:center;justify-content:center">
+  <div class="win" style="width:1500px;border-radius:12px;border:none">
+    <div class="tbar" style="background:#0a246a"><span>Завершение работы презентации</span><span style="font-style:italic">AEC</span></div>
+    <div style="background:linear-gradient(180deg,#7c9ef0,#5577d8);padding:56px 64px;display:flex;gap:64px;align-items:center;color:#fff">
+      <div style="background:#fff;padding:18px;border-radius:12px;flex:none"><img src="pitch-qr.svg" alt="QR на игру" style="width:300px;height:300px;display:block"></div>
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <p style="font:400 56px 'Russo One',sans-serif">Выключать презентацию и включать зал?</p>
+        <p style="font-size:30px;line-height:1.4">Наведите камеру на QR или откройте <b>nexar-home-network.ru</b>. Комнаты по 4 человека: код комнаты = номер вашего стола.</p>
+        <div style="display:flex;gap:24px;margin-top:10px">
+          <a class="xpbtn" href="/?room=jury&amp;mode=2v2" style="text-decoration:none;font-weight:700;background:linear-gradient(180deg,#ffe27a,#e8a800)">▶ Жюри, в бой</a>
+          <a class="xpbtn" href="/?room=demo&amp;mode=dm" style="text-decoration:none">Дезматч</a>
+          <button class="xpbtn" id="toStart">Отмена</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="menu">
+  <div class="who">AEC · Chief Vibe Officer</div>
+  <div id="menuList"></div>
+  <div class="off"><a href="/" style="margin-right:24px">Играть</a><a id="shut">Завершение работы</a></div>
+</div>
+<div id="task"><button id="start">пуск</button><span class="slot" id="slot"></span><span id="clock"></span></div>
+</div>
+<script src="pitch.js"></script>
+</body>
+</html>

@@ -216,7 +216,7 @@ function setGap(px) {
 }
 const hint = document.createElement('div');
 hint.textContent = 'клик: захват мыши · V: вид сверху / от первого лица · Esc: отпустить';
-hint.style.cssText = 'position:fixed;left:50%;top:58%;transform:translateX(-50%);z-index:3;pointer-events:none;color:#fff;font:600 14px system-ui;text-shadow:0 1px 3px #000;display:none';
+hint.style.cssText = 'position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:3;pointer-events:none;color:#fff;font:600 14px system-ui;text-shadow:0 1px 3px #000;display:none';
 document.body.append(hint);
 const viewGun = new THREE.Group();                  // пушка в руке по model.parts текущего оружия, висит на камере
 viewGun.scale.setScalar(0.3);
@@ -243,7 +243,7 @@ viewNade.position.set(-0.24, -0.2, -0.45);
 viewNade.visible = false;
 camera.add(viewNade);
 let nadeFor = null, nadeThrow = 0;
-addEventListener('keydown', (e) => { if (e.code === 'Digit4' && !e.repeat && locked()) nadeThrow = 1; });
+addEventListener('keydown', (e) => { if ((e.code === 'Digit4' || e.code === 'Digit5') && !e.repeat && locked()) nadeThrow = 1; });
 const cv2d = document.getElementById('cv');
 const locked = () => document.pointerLockElement === cv2d;
 const shopOpen = () => { const el = document.getElementById('shop'); return el && !el.classList.contains('hidden'); };

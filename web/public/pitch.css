@@ -1,0 +1,56 @@
+/* экраны питча: стиль 2008 (XP, PowerPoint 2003, WordArt), холст 1920x1080 масштабируется в окно */
+:root { --xp:#0054e3; --xpd:#0a246a; --beige:#ece9d8; --gold:#ffd23f; --ink:#1b1b1b; }
+* { box-sizing:border-box; }
+html, body { margin:0; height:100%; background:#000; overflow:hidden; font-family:Tahoma, Verdana, sans-serif; color:var(--ink); }
+#stage { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; overflow:hidden; }
+.scr { position:absolute; inset:0 0 56px 0; display:none; padding:96px 128px; flex-direction:column; gap:36px; }
+.scr.on { display:flex; animation:fade .35s ease; }
+@keyframes fade { from { opacity:0; transform:scale(1.02); } to { opacity:1; transform:none; } }
+p, h1, h2, h3 { margin:0; }
+b { font-weight:700; }
+
+/* обои и окна */
+.bliss { background:linear-gradient(180deg, #3d8ef0 0%, #8cc4ff 48%, #6fbf3a 49%, #3f9a1c 100%); }
+.win { background:var(--beige); border:3px solid #0831d9; border-radius:10px 10px 0 0; box-shadow:16px 16px 0 rgba(0,0,0,.35); overflow:hidden; display:flex; flex-direction:column; }
+.tbar { height:60px; padding:0 14px; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(180deg, #0a5af0 0%, #3b95ff 10%, #2384ff 45%, #1170f5 85%, #0054e3 100%); color:#fff; font:700 28px 'Trebuchet MS', Tahoma, sans-serif; text-shadow:1px 1px 0 var(--xpd); }
+.tbar i { font-style:normal; background:#d8432b; border:2px solid #fff; border-radius:4px; padding:0 12px; font-size:22px; }
+.xpbtn { font:26px Tahoma, sans-serif; color:var(--ink); background:linear-gradient(180deg, #fff 0%, #dcdcd4 100%); border:2px solid #003c74; border-radius:6px; padding:10px 40px; cursor:pointer; }
+.xpbtn:hover { box-shadow:0 0 0 3px #f8b636 inset; }
+
+/* WordArt */
+.wa { font-family:'Russo One', 'Trebuchet MS', sans-serif; font-weight:400; line-height:1.05; background:linear-gradient(180deg, #ff4f4f, #ffb000 30%, #fff200 50%, #3ad13a 70%, #2c7bff); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; -webkit-text-stroke:3px #222; filter:drop-shadow(8px 8px 0 rgba(0,0,0,.35)); }
+.wa.gold { background:linear-gradient(180deg, #fff8c4 0%, #ffc83d 50%, #c47a00 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-stroke:2px #5a3300; }
+.lat { font-family:Anton, 'Russo One', Impact, sans-serif; letter-spacing:2px; }
+.h2 { font:400 72px 'Russo One', 'Trebuchet MS', sans-serif; }
+
+/* бенто */
+.bento { display:grid; gap:24px; flex:1; }
+.cell { border-radius:18px; padding:32px; display:flex; flex-direction:column; gap:12px; position:relative; overflow:hidden; }
+.cell h3 { font-size:40px; line-height:1.1; }
+.cell p { font-size:26px; line-height:1.35; }
+.tag { font-size:22px; font-weight:700; letter-spacing:1px; text-transform:uppercase; opacity:.75; }
+
+/* бинго слопа */
+.bingo .cell { background:#ffffff; border:3px solid #7b2cff; cursor:pointer; transition:transform .15s; }
+.bingo .cell:hover { transform:rotate(-1deg) scale(1.02); }
+.bingo .cell.x::after { content:'✕'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:700 260px Tahoma, sans-serif; color:#e0201b; opacity:.85; }
+
+/* стена мемов */
+.meme { background:#fff; border:4px solid #111; box-shadow:10px 10px 0 #111; padding:22px; display:flex; flex-direction:column; gap:10px; justify-content:center; }
+.meme .big { font:400 54px 'Russo One', Impact, sans-serif; line-height:1.05; }
+.impact { font:400 46px Impact, 'Russo One', sans-serif; color:#fff; -webkit-text-stroke:2px #000; text-transform:uppercase; text-align:center; }
+
+/* панель задач и пуск */
+#task { position:absolute; left:0; right:0; bottom:0; height:56px; display:flex; align-items:center; gap:16px; background:linear-gradient(180deg, #3168d5 0%, #4993e6 8%, #2157d7 40%, #2663e0 90%); z-index:10; }
+#start { height:56px; padding:0 30px 0 22px; border:none; border-radius:0 18px 18px 0; background:linear-gradient(180deg, #3c9c3c 0%, #5fc95f 12%, #3a9e2b 60%, #2d8a24 100%); color:#fff; font:italic 700 30px 'Trebuchet MS', sans-serif; text-shadow:1px 1px 2px #000; cursor:pointer; }
+#task .slot { color:#fff; font-size:20px; background:#3d82ef; border:1px solid #1b4fbf; border-radius:4px; padding:8px 18px; }
+#clock { margin-left:auto; height:56px; padding:0 24px; display:flex; align-items:center; color:#fff; font-size:22px; background:#0f8ae8; border-left:2px solid #0b5fc2; }
+#menu { position:absolute; left:0; bottom:56px; width:560px; z-index:11; display:none; background:#fff; border:3px solid #0831d9; border-radius:10px 10px 0 0; box-shadow:8px 8px 0 rgba(0,0,0,.3); }
+#menu.on { display:block; }
+#menu .who { padding:20px; font:700 28px 'Trebuchet MS', sans-serif; color:#fff; background:linear-gradient(180deg, #1868ce, #0e60cb); }
+#menu a { display:block; padding:12px 24px; font-size:24px; color:var(--ink); text-decoration:none; cursor:pointer; }
+#menu a:hover { background:#316ac5; color:#fff; }
+#menu .off { padding:14px 24px; background:linear-gradient(180deg, #1868ce, #0e60cb); text-align:right; }
+#menu .off a { display:inline-block; color:#fff; font-weight:700; }
+
+#hint { position:absolute; right:24px; top:20px; z-index:12; color:#fff8; font-size:18px; }
