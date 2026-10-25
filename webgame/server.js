@@ -5,6 +5,7 @@ const zlib = require('zlib');
 const { WebSocketServer } = require('ws');
 
 const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const THREE_BUILD_DIR = path.join(__dirname, 'node_modules', 'three', 'build');
 
@@ -381,6 +382,6 @@ setInterval(() => {
   }
 }, 30000);
 
-httpServer.listen(PORT, () => {
-  console.log(`Skill Issue Arena: http://localhost:${PORT}`);
+httpServer.listen(PORT, HOST, () => {
+  console.log(`Skill Issue Arena: http://${HOST}:${PORT}`);
 });
