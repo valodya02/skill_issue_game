@@ -181,6 +181,11 @@ function inaccuracy(p) {
   const run = Math.min(1, Math.hypot(p.vx || 0, p.vy || 0) / 250);
   return 0.004 + run * 0.06 + ((p.z || 0) > 2 ? 0.14 : 0) + (p.recoil || 0);
 }
+// Спрей как в КС: первая пуля стоя летит в точку, дальше очередь уводит по паттерну (влево, вправо, змейкой).
+// Паттерн выучивается: тот, кто тянет мышь против, кладёт очередь в голову. Пауза дольше BURST_RESET мс сбрасывает
+const BURST_RESET = 260;
+const SPRAY = [0, 0, 0.012, 0.022, 0.03, 0.026, 0.012, -0.008, -0.026, -0.036, -0.03, -0.014, 0.006, 0.024, 0.032, 0.02];
+function sprayOffset(n) { return SPRAY[Math.min(n, SPRAY.length - 1)] * (n >= SPRAY.length ? (n % 2 ? 1 : -1) : 1); }
 
 function cast(room, p, slot, tx, ty, skillOverride) {
   const c = CHARS[p.char];
@@ -321,11 +326,16 @@ function fire(room, p, tx, ty) {
     return;
   }
   const n = w.count || 1, fast = !!turret || FAST.has(w.id), speed = fast ? Math.max(2600, w.speed * 3) : w.speed;
-  const spread = fast && !turret ? inaccuracy(p) : 0;
+  // очередь: номер пули в спрее, сброс по паузе
+  p.burst = t - (p.lastShot || 0) > w.rate + BURST_RESET ? 0 : (p.burst || 0) + 1;
+  p.lastShot = t;
+  const first = p.burst === 0 && Math.hypot(p.vx || 0, p.vy || 0) < 40 && (p.z || 0) <= 2;
+  const spread = fast && !turret ? (first ? 0 : inaccuracy(p)) : 0;
+  const drift = fast && n === 1 ? sprayOffset(p.burst) : 0;
   if (fast) p.recoil = Math.min(0.08, (p.recoil || 0) + (w.rate < 200 ? 0.015 : 0.03));
   for (let i = 0; i < n; i++) {
     const jitter = (has(p, 'jitter') ? (Math.random() * 2 - 1) * 20 * Math.PI / 180 : 0) + (Math.random() * 2 - 1) * spread;
-    const a = (n > 1 ? ang - w.spread / 2 + (w.spread * i) / (n - 1) : ang) + jitter;
+    const a = (n > 1 ? ang - w.spread / 2 + (w.spread * i) / (n - 1) : ang) + jitter + drift;
     room.shots.push({
       id: uid++, owner: p.id, team: p.team, x: p.x, y: p.y,
       vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, r: w.r, fast, left: w.range, dmg: w.dmg, fx: w.fx, emoji: w.emoji,
@@ -735,8 +745,11 @@ io.on('connection', (sock) => {
     const v = room.turrets.find((v) => !v.by && near(p, v, 50));
     if (v) { v.by = p.id; p.turret = v.id; p.vx = 0; p.vy = 0; p.x = v.x; p.y = v.y; emitFx(room, { k: 'turret', x: v.x, y: v.y }); }
   });
-  sock.on('grenade', ({ x, y } = {}) => {
-    const p = me(); if (!p?.alive || room.phase !== 'playing' || !p.grenade || !p.grenades[p.grenade]) return;
+  sock.on('grenade', ({ x, y, kind } = {}) => {
+    const p = me(); if (!p?.alive || room.phase !== 'playing') return;
+    // 4 кофе, 5 дым, как слоты гранат в КС; без kind летит та, что выбрана
+    if (kind === 'coffee' || kind === 'smoke') { if (!p.grenades[kind]) return; p.grenade = kind; }
+    if (!p.grenade || !p.grenades[p.grenade]) return;
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
     const w = SHOP[p.grenade], ang = Math.atan2(y - p.y, x - p.x);
     const len = Math.min(w.range, Math.hypot(x - p.x, y - p.y));

@@ -262,7 +262,8 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyR' && meta.skills) sock.emit('cast', { slot: 'r', ...w });
   if (e.code === 'KeyF') sock.emit('pickup');
   if (e.code === 'KeyG' && !e.repeat) sock.emit('terminal');
-  if (e.code === 'Digit4' && !e.repeat) sock.emit('grenade', w);
+  if (e.code === 'Digit4' && !e.repeat) sock.emit('grenade', { ...w, kind: 'coffee' });
+  if (e.code === 'Digit5' && !e.repeat) sock.emit('grenade', { ...w, kind: 'smoke' });
   if (e.code === 'Space') e.preventDefault();
 });
 addEventListener('keyup', (e) => { keys[e.code] = 0; });
@@ -427,35 +428,8 @@ function frame() {
   ctx.fillText(`${phaseLabel} ${S.timer ? Math.floor(S.timer / 60) + ':' + String(S.timer % 60).padStart(2, '0') : ''}`, innerWidth / 2, S.mode === 'dm' ? 50 : 24);
 
   if (me && me.char && S.phase !== 'lobby') {
-    const y = innerHeight - 36, c = CHARS[me.char];
-    ctx.textAlign = 'left'; ctx.font = 'bold 18px system-ui'; ctx.fillStyle = '#ffd23f';
-    ctx.fillText(`${me.money}$  🪙${me.tokens}`, 16, y);
-    ctx.fillStyle = '#fff'; ctx.font = '16px system-ui';
-    ctx.fillText(`${me.weapon.emoji} ${me.weapon.name}`, 16, y - 26);
-    if (me.grenade) ctx.fillText(`4 ${SHOP[me.grenade].emoji} ${SHOP[me.grenade].name}`, 16, y - 50);
-    if (meta.skills) ['q', 'e', 'r'].forEach((k, i) => {
-      const x = innerWidth / 2 - 165 + i * 115, s = c.skills[k], left = me.cd[k] || 0;
-      ctx.fillStyle = left ? '#2b2340' : '#3d2f63'; ctx.fillRect(x, y - 24, 105, 44);
-      if (left) { ctx.fillStyle = '#0009'; ctx.fillRect(x, y - 24, 105 * Math.min(1, left / s.cd), 44); }
-      ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 14px system-ui'; ctx.fillText(k.toUpperCase(), x + 6, y - 10);
-      ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.fillText(s.label.slice(0, 15), x + 6, y + 8);
-      if (left) { ctx.font = 'bold 14px system-ui'; ctx.fillText((left / 1000).toFixed(1), x + 70, y - 10); }
-    });
-    ctx.textAlign = 'right'; ctx.fillStyle = '#a79cbf'; ctx.font = '13px system-ui';
-    ctx.fillText('WASD · ПРОБЕЛ прыжок · ЛКМ огонь · 4 граната · E турель · G терминал · F подобрать · B магазин', innerWidth - 16, y);
     if (me.hop >= 2) { ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 28px system-ui'; ctx.fillText(`BHOP ×${me.hop}`, innerWidth / 2, 70); }
-    if (S.bomb && gameMap) {
-      let hint = '';
-      if (me.team === 0 && S.bomb.carrier === me.id && S.bomb.state === 'carried' &&
-          Object.values(gameMap.sites || {}).some((site) => Math.hypot(me.x - site.x, me.y - site.y) <= site.r)) hint = 'G: запустить терминал';
-      if (me.team === 1 && S.bomb.state === 'planted' && Math.hypot(me.x - S.bomb.x, me.y - S.bomb.y) <= 60) hint = 'G: обезвредить через терминал';
-      if (me.team === 0 && S.bomb.state === 'dropped' && Math.hypot(me.x - S.bomb.x, me.y - S.bomb.y) <= 70) hint = 'F: подобрать тапок';
-      if (hint) { ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 22px system-ui'; ctx.fillText(hint, innerWidth / 2, innerHeight - 105); }
-    }
-    if ((gameMap?.shops || []).some((shop) => Math.hypot(me.x - shop.x, me.y - shop.y) <= shop.r)) {
-      ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 18px system-ui';
-      ctx.fillText('ларёк: B купить зажигалку', innerWidth / 2, innerHeight - 78);
-    }
+    // слоты, деньги, скиллы и подсказки живут в hud.js (DOM поверх канваса)
   }
   if (terminal) {
     ctx.textAlign = 'center'; ctx.fillStyle = '#111b'; ctx.fillRect(innerWidth / 2 - 270, innerHeight / 2 - 75, 540, 150);

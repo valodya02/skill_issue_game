@@ -243,7 +243,7 @@ viewNade.position.set(-0.24, -0.2, -0.45);
 viewNade.visible = false;
 camera.add(viewNade);
 let nadeFor = null, nadeThrow = 0;
-addEventListener('keydown', (e) => { if (e.code === 'Digit4' && !e.repeat && locked()) nadeThrow = 1; });
+addEventListener('keydown', (e) => { if ((e.code === 'Digit4' || e.code === 'Digit5') && !e.repeat && locked()) nadeThrow = 1; });
 const cv2d = document.getElementById('cv');
 const locked = () => document.pointerLockElement === cv2d;
 const shopOpen = () => { const el = document.getElementById('shop'); return el && !el.classList.contains('hidden'); };
