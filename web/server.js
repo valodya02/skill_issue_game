@@ -28,6 +28,9 @@ const io = new Server(server, { transports: ['websocket'], perMessageDeflate: fa
 const rooms = new Map();
 // боты = клише ИИ-стартапов, до 16 символов (сервер режет имя)
 const BOT_NAMES = ['Агент агентов', 'Notion с чатом', 'GPT-обёртка', 'ARR $0', 'Пивот-бот', 'Вейтлист 3 чел', 'Слоп-бот', 'Фиол. градиент', 'Воздухан', 'Сигма-бот', 'Скуф'];
+// dm и zal: каждый сам за себя; zal = зал на 32, старт по кнопке хоста, вход в идущий бой
+const MODES = ['1v1', '2v2', 'dm', 'zal'];
+const ffa = (room) => room?.mode === 'dm' || room?.mode === 'zal';
 const now = () => Date.now();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -39,16 +42,16 @@ const fieldW = map.W || W, fieldH = map.H || H;
 const near = (a, b, r) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 <= r * r;
 const inCircle = (p, c) => !!c && near(p, c, c.r);
 const spawn = (room, p, index = 0) => {
-  const team = room.mode === 'dm' ? String(index % 2) : String(p.team);
+  const team = ffa(room) ? String(index % 2) : String(p.team);
   const points = map.spawns[team] || map.spawns['0'] || [[fieldW / 2, fieldH / 2]];
-  const point = room.mode === 'dm' ? points[Math.floor(Math.random() * points.length)] : points[index % points.length];
+  const point = ffa(room) ? points[Math.floor(Math.random() * points.length)] : points[index % points.length];
   p.x = point[0]; p.y = point[1];
 };
 
 function getRoom(code, mode) {
   if (!rooms.has(code)) {
     rooms.set(code, {
-      code, mode: ['1v1', '2v2', 'dm'].includes(mode) ? mode : '1v1', phase: 'lobby', map,
+      code, mode: MODES.includes(mode) ? mode : '1v1', phase: 'lobby', map,
       players: new Map(), shots: [], pending: [], zones: [], walls: [], drops: [],
       npcs: [], turrets: [], bomb: null, score: [0, 0], roundWinner: null, phaseUntil: 0, winner: null,
       sentW: new Map(),  // кому какое оружие уже ушло в снапшоте
@@ -56,12 +59,12 @@ function getRoom(code, mode) {
   }
   return rooms.get(code);
 }
-const slots = (room) => (room.mode === '1v1' ? 2 : 4);
+const slots = (room) => ({ '1v1': 2, zal: 32 })[room.mode] || 4;
 
 function addPlayer(room, id, name, bot = false) {
   const counts = [0, 0];
   for (const p of room.players.values()) if (p.team < 2) counts[p.team]++;
-  const team = room.mode === 'dm' ? room.players.size : counts[0] <= counts[1] ? 0 : 1;
+  const team = ffa(room) ? (room.nextTeam = (room.nextTeam || 0) + 1) : counts[0] <= counts[1] ? 0 : 1;
   const p = {
     id, name: String(name || 'NPC').slice(0, 16), team, bot,
     char: bot ? CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)] : null,
@@ -76,7 +79,7 @@ function addPlayer(room, id, name, bot = false) {
 }
 
 const pistol = () => ({ ...normalize(SHOP.pistol), id: 'pistol' });
-function resetEconomy(p, room) { p.money = room?.mode === 'dm' ? 4000 : ECON.start; p.tokens = 0; p.weapon = pistol(); p.kills = 0; }
+function resetEconomy(p, room) { p.money = ffa(room) ? 4000 : ECON.start; p.tokens = 0; p.weapon = pistol(); p.kills = 0; }
 
 function resetRound(room) {
   room.shots = []; room.pending = []; room.zones = []; room.walls = []; room.drops = [];
@@ -92,7 +95,7 @@ function resetRound(room) {
     p.ang = t === 0 ? 0 : Math.PI;
     Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, grenade: null, grenades: { coffee: false, smoke: false }, turret: null, hold: null, hasJumped: false, jumpHeld: false, lastLand: -Infinity });
   }));
-  if (room.mode === 'dm') {
+  if (ffa(room)) {
     let i = 0;
     for (const p of room.players.values()) { spawn(room, p, i++); p.hp = CHARS[p.char].hp; p.alive = true; p.st = {}; p.cd = { a: 0, q: 0, e: 0, r: 0 }; Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, grenade: null, grenades: { coffee: false, smoke: false }, turret: null, hold: null, hasJumped: false, jumpHeld: false, lastLand: -Infinity }); }
   }
@@ -101,7 +104,7 @@ function resetRound(room) {
     const best = Object.entries(SHOP).filter(([, w]) => !w.noShop && !w.grenade && w.price <= p.money).sort((x, y) => y[1].price - x[1].price)[0];
     if (best && best[0] !== 'pistol') { p.money -= best[1].price; p.weapon = { ...normalize(best[1]), id: best[0] }; }
   }
-  if (room.mode === 'dm') { room.bomb = null; room.phase = 'playing'; room.phaseUntil = now() + 300000; }
+  if (ffa(room)) { room.bomb = null; room.phase = 'playing'; room.phaseUntil = now() + 300000; }
   else {
     const carriers = byTeam[0];
     const carrier = carriers[Math.floor(Math.random() * carriers.length)];
@@ -110,10 +113,14 @@ function resetRound(room) {
   }
 }
 
-function tryStart(room) {
+function tryStart(room, force = false) {
   const ps = [...room.players.values()];
-  if (room.phase !== 'lobby' || ps.length !== slots(room)) return;
-  if (!ps.every((p) => p.char && p.ready)) return;
+  if (room.phase !== 'lobby') return;
+  if (room.mode === 'zal') {
+    // зал не ждёт полной комнаты и чужих «готов»: стартует хост, без персонажа дадим случайного
+    if (!force || ps.length < 2) return;
+    for (const p of ps) { p.char = p.char || CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; p.ready = true; }
+  } else if (ps.length !== slots(room) || !ps.every((p) => p.char && p.ready)) return;
   room.score = [0, 0]; room.winner = null;
   for (const p of ps) { resetEconomy(p, room); p.alive = true; }
   resetRound(room);
@@ -141,7 +148,7 @@ function damage(room, src, tgt, dmg, fx) {
     tgt.alive = false; tgt.hp = 0;
     if (tgt.turret) { const turret = room.turrets.find((v) => v.id === tgt.turret); if (turret) turret.by = null; tgt.turret = null; }
     if (src && src !== tgt) { src.kills++; src.money = Math.min(ECON.max, src.money + ECON.kill); }
-    if (room.mode === 'dm') tgt.respawnAt = now() + 3000;
+    if (ffa(room)) tgt.respawnAt = now() + 3000;
     if (room.bomb?.state === 'carried' && room.bomb.carrier === tgt.id) {
       Object.assign(room.bomb, { state: 'dropped', carrier: null, x: tgt.x, y: tgt.y, progress: 0 });
     }
@@ -505,7 +512,7 @@ function step(room, dt) {
   room.zones = room.zones.filter((z) => z.until > t);
 
   for (const p of room.players.values()) {
-    if (room.mode === 'dm' && !p.alive && t >= p.respawnAt) {
+    if (ffa(room) && !p.alive && t >= p.respawnAt) {
       spawn(room, p, Math.floor(Math.random() * 4)); p.hp = CHARS[p.char].hp; p.alive = true; p.st = {};
       Object.assign(p, { vx: 0, vy: 0, z: 0, vz: 0, hop: 0, hasJumped: false, jumpHeld: false, lastLand: -Infinity, grenade: null, grenades: { coffee: false, smoke: false }, turret: null });
       p.weapon = pistol(); p.cd = { a: 0, q: 0, e: 0, r: 0 };
@@ -634,10 +641,10 @@ function step(room, dt) {
     return true;
   });
 
-  if (room.mode === 'dm') {
+  if (ffa(room)) {
     let leader = null;
     for (const p of room.players.values()) if (!leader || p.kills > leader.kills) leader = p;
-    if (leader && (leader.kills >= 10 || t >= room.phaseUntil)) {
+    if (leader && (leader.kills >= (room.mode === 'zal' ? 20 : 10) || t >= room.phaseUntil)) {
       room.winner = leader.team; room.phase = 'matchEnd'; emitFx(room, { k: 'banner', text: `${leader.name} затащил дезматч` });
     }
     return;
@@ -687,6 +694,8 @@ function runTick() {
   for (const room of rooms.values()) {
     step(room, dt);
     // volatile: забитый сокет пропускает кадр, а не копит очередь из старых снапшотов
+    // зал: 30 человек × 30 Гц забивают канал, шлём каждый второй тик
+    if (room.mode === 'zal' && (room.tick = (room.tick || 0) + 1) % 2) continue;
     io.to(room.code).volatile.emit('state', snapshot(room));
   }
 }
@@ -705,29 +714,36 @@ io.on('connection', (sock) => {
   sock.on('join', ({ code, name, mode } = {}) => {
     code = String(code || 'arena').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || 'arena';
     const r = getRoom(code, mode);
-    if (r.players.size >= slots(r) || r.phase !== 'lobby') return sock.emit('nope', 'Комната занята или бой уже идёт');
+    const late = r.mode === 'zal' && ['buy', 'playing'].includes(r.phase);
+    if (r.players.size >= slots(r) || (r.phase !== 'lobby' && !late)) return sock.emit('nope', 'Комната занята или бой уже идёт');
     room = r;
     sock.join(code);
-    addPlayer(room, sock.id, name);
+    const np = addPlayer(room, sock.id, name);
+    if (late) {
+      // опоздавший в зал: случайный персонаж, деньги дезматча, появится на следующем тике через респаун
+      np.char = CHAR_IDS[Math.floor(Math.random() * CHAR_IDS.length)]; np.ready = true;
+      resetEconomy(np, room); np.alive = false; np.respawnAt = 0;
+    }
     room.sentW.clear();  // новичок должен получить оружие всех
     sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id, skills: SKILLS });
   });
   sock.on('pick', (cid) => { const p = me(); if (p && CHARS[cid] && room.phase === 'lobby') { p.char = cid; tryStart(room); } });
   sock.on('ready', () => { const p = me(); if (p && p.char) { p.ready = !p.ready; tryStart(room); } });
   sock.on('team', () => {
-    const p = me(); if (!p || room.phase !== 'lobby' || room.mode === 'dm') return;
+    const p = me(); if (!p || room.phase !== 'lobby' || ffa(room)) return;
     const other = 1 - p.team, half = slots(room) / 2;
     if ([...room.players.values()].filter((o) => o.team === other).length < half) p.team = other;
   });
   // режим и ботов меняет только хост: первый живой человек в комнате
   const isHost = () => !!room && [...room.players.values()].find((o) => !o.bot)?.id === sock.id;
   sock.on('mode', (mode) => {
-    if (!isHost() || room.phase !== 'lobby' || !['1v1', '2v2', 'dm'].includes(mode)) return;
-    if (mode === '1v1' && room.players.size > 2) return sock.emit('nope', 'Слишком много игроков для 1 на 1');
+    if (!isHost() || room.phase !== 'lobby' || !MODES.includes(mode)) return;
+    if (room.players.size > slots({ mode })) return sock.emit('nope', 'Слишком много игроков для этого режима');
     room.mode = mode;
     let i = 0;
-    for (const p of room.players.values()) p.team = mode === 'dm' ? i++ : i++ % 2;
+    for (const p of room.players.values()) p.team = mode === 'dm' || mode === 'zal' ? (room.nextTeam = (room.nextTeam || 0) + 1) : i++ % 2;
   });
+  sock.on('start', () => { if (isHost()) tryStart(room, true); });
   sock.on('addBot', () => {
     if (!isHost() || room.phase !== 'lobby' || room.players.size >= slots(room)) return;
     addPlayer(room, 'bot' + uid++, BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], true);
@@ -778,7 +794,7 @@ io.on('connection', (sock) => {
   });
   sock.on('buyToken', () => {
     const p = me();
-    if (!p || (room.phase !== 'buy' && !(room.mode === 'dm' && room.phase === 'playing')) || p.money < ECON.token) return;
+    if (!p || (room.phase !== 'buy' && !(ffa(room) && room.phase === 'playing')) || p.money < ECON.token) return;
     p.money -= ECON.token; p.tokens++;
   });
   sock.on('forge', async (prompt) => {
@@ -819,7 +835,7 @@ io.on('connection', (sock) => {
     room.players.delete(sock.id);
     const humans = [...room.players.values()].filter((p) => !p.bot);
     if (!humans.length) rooms.delete(room.code);
-    else if (room.phase !== 'lobby') room.phase = 'lobby', room.players.forEach((p) => (p.ready = p.bot));
+    else if (room.phase !== 'lobby' && room.mode !== 'zal') room.phase = 'lobby', room.players.forEach((p) => (p.ready = p.bot));
   });
 });
 

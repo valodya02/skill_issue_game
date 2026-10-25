@@ -16,6 +16,7 @@ let scale = 1, ox = 0, oy = 0;
 // 3D-слой (client3d.js) читает состояние отсюда; без WebGL2 или с ?3d=0 работает 2D, F9 переключает
 window.GAME_VIEW = { get S() { return S; }, get meta() { return meta; }, get map() { return gameMap; } };
 const in3d = () => !!window.GAME3D?.on;
+const ffa = (mode) => mode === 'dm' || mode === 'zal';  // каждый сам за себя
 
 // ---------- вход ----------
 const params = new URLSearchParams(location.search);
@@ -27,6 +28,8 @@ $('go').onclick = () => {
   localStorageSet('nick', name);
   sock.emit('join', { code: $('rc').value, name, mode: $('md').value });
 };
+// с телефона не поиграть: управление клавиатурой и мышью
+if (matchMedia('(pointer: coarse)').matches) $('touch').classList.remove('hidden');
 function localStorageGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function localStorageSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 
@@ -56,18 +59,36 @@ $('lmode').onchange = () => sock.emit('mode', $('lmode').value);
 $('bot').onclick = () => sock.emit('addBot');
 $('rdy').onclick = () => sock.emit('ready');
 $('again').onclick = () => sock.emit('rematch');
+$('startz').onclick = () => sock.emit('start');
+// QR на весь экран: зал сканирует и заходит в эту же комнату
+const roomUrl = () => `${location.origin}/?room=${meta.code}&mode=${S?.mode || meta.mode}`;
+$('qr').onclick = () => {
+  const q = qrcode(0, 'M'); q.addData(roomUrl()); q.make();
+  const size = Math.min(innerWidth, innerHeight) * 0.7;
+  $('qrimg').innerHTML = q.createSvgTag({ cellSize: Math.max(2, Math.floor(size / (q.getModuleCount() + 8))), margin: 4, scalable: false });
+  $('qrimg').querySelector('svg').style.background = '#fff';
+  $('qrurl').textContent = roomUrl().replace(/^https?:\/\//, '');
+  $('qrbox').classList.remove('hidden');
+};
+$('qrbox').onclick = () => $('qrbox').classList.add('hidden');
 $('share').onclick = () => { navigator.clipboard?.writeText(location.href); toast('Ссылка скопирована'); };
 
 function renderLobby() {
   const me = S.players.find((p) => p.id === meta.you);
   $('lmode').value = S.mode;
-  $('swap').classList.toggle('hidden', S.mode === 'dm');
+  $('swap').classList.toggle('hidden', ffa(S.mode));
   [0, 1].forEach((t) => {
-    $('tm' + t).innerHTML = `<b style="color:var(--t${t})">${S.mode === 'dm' ? 'Игроки' : 'Команда ' + (t + 1)}</b><br>` + S.players.filter((p, i) => S.mode === 'dm' ? i % 2 === t : p.team === t)
+    $('tm' + t).innerHTML = `<b style="color:var(--t${t})">${ffa(S.mode) ? 'Игроки' : 'Команда ' + (t + 1)}</b><br>` + S.players.filter((p, i) => ffa(S.mode) ? i % 2 === t : p.team === t)
       .map((p) => `${p.char ? CHARS[p.char].emoji : '❔'} ${esc(p.name)}${p.id === meta.you ? ' (ты)' : ''} ${p.ready ? '✅' : '⏳'}`).join('<br>');
   });
   grid.querySelectorAll('.ch').forEach((b) => b.classList.toggle('sel', me && me.char === b.dataset.id));
   $('rdy').textContent = me && me.ready ? 'Не готов' : 'Готов';
+  // зал стартует хост (первый человек в комнате), остальным готовность не нужна
+  const zal = S.mode === 'zal', host = S.players.find((p) => !p.bot)?.id === meta.you;
+  $('startz').classList.toggle('hidden', !(zal && host));
+  $('rdy').classList.toggle('hidden', zal);
+  $('lhint').textContent = zal ? `В зале ${S.players.length} из 32. ${host ? 'Жми «Старт», когда все зашли, опоздавшие влетят прямо в бой.' : 'Ждём, пока хост нажмёт «Старт».'}`
+    : 'Старт, когда все слоты заняты и все готовы.';
 }
 
 // ---------- магазин ----------
@@ -101,7 +122,7 @@ function renderShop(me) {
   $('scur').innerHTML = `В руках: ${me.weapon.emoji} <b>${esc(me.weapon.name)}</b> · урон ${me.weapon.dmg}` +
     `${me.weapon.count > 1 ? '×' + me.weapon.count : ''} · ${Math.round(60000 / me.weapon.rate)} выстр/мин` +
     (me.weapon.lore ? `<br><i>${esc(me.weapon.lore)}</i>` : '') + `<br>Слот 4: ${me.grenade ? SHOP[me.grenade].emoji + ' ' + SHOP[me.grenade].name : 'пусто'}`;
-  const buy = S.phase === 'buy' || S.mode === 'dm' && S.phase === 'playing';
+  const buy = S.phase === 'buy' || ffa(S.mode) && S.phase === 'playing';
   wg.querySelectorAll('.wpn').forEach((b) => {
     const kiosk = Object.hasOwn(KIOSK, b.dataset.id) && (gameMap?.shops || []).some((shop) => shop.items.includes(b.dataset.id) && Math.hypot(me.x - shop.x, me.y - shop.y) <= shop.r);
     const w = KIOSK[b.dataset.id] || SHOP[b.dataset.id];
@@ -138,8 +159,8 @@ sock.on('state', (s) => {
   if (s.phase === 'buy' && prevPhase !== 'buy') toggleShop(true);
   if (s.phase === 'playing' && prevPhase === 'buy') toggleShop(false);
   if (s.phase === 'matchEnd') {
-    $('endt').textContent = s.mode === 'dm' ? `${s.players.find((p) => p.team === s.winner)?.name || 'Игрок'} затащил` : `Команда ${s.winner + 1} затащила`;
-    $('ends').textContent = (s.mode === 'dm' ? '' : `${s.score[0]} : ${s.score[1]} · `) + s.players.map((p) => `${p.name} ${p.kills}☠`).join(' · ');
+    $('endt').textContent = ffa(s.mode) ? `${s.players.find((p) => p.team === s.winner)?.name || 'Игрок'} затащил` : `Команда ${s.winner + 1} затащила`;
+    $('ends').textContent = (ffa(s.mode) ? '' : `${s.score[0]} : ${s.score[1]} · `) + [...s.players].sort((a, b) => b.kills - a.kills).slice(0, 10).map((p) => `${p.name} ${p.kills}☠`).join(' · ');
   }
   if (me && !$('shop').classList.contains('hidden')) renderShop(me);
   prevPhase = s.phase;
@@ -416,16 +437,16 @@ function frame() {
   // HUD в экранных координатах
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.textAlign = 'center'; ctx.font = 'bold 26px system-ui';
-  if (S.mode === 'dm') {
+  if (ffa(S.mode)) {
     ctx.fillStyle = '#fff'; ctx.font = 'bold 16px system-ui';
-    ctx.fillText(S.players.map((p) => `${p.name} ${p.kills}`).join('  ·  '), innerWidth / 2, 24);
+    ctx.fillText([...S.players].sort((a, b) => b.kills - a.kills).slice(0, 6).map((p) => `${p.name} ${p.kills}`).join('  ·  '), innerWidth / 2, 24);
   } else {
     ctx.fillStyle = TEAM[0]; ctx.fillText(S.score[0], innerWidth / 2 - 60, 24);
     ctx.fillStyle = TEAM[1]; ctx.fillText(S.score[1], innerWidth / 2 + 60, 24);
   }
   ctx.fillStyle = '#fff'; ctx.font = 'bold 18px system-ui';
   const phaseLabel = { buy: 'ЗАКУПКА', playing: '', roundEnd: '', countdown: '' }[S.phase] || '';
-  ctx.fillText(`${phaseLabel} ${S.timer ? Math.floor(S.timer / 60) + ':' + String(S.timer % 60).padStart(2, '0') : ''}`, innerWidth / 2, S.mode === 'dm' ? 50 : 24);
+  ctx.fillText(`${phaseLabel} ${S.timer ? Math.floor(S.timer / 60) + ':' + String(S.timer % 60).padStart(2, '0') : ''}`, innerWidth / 2, ffa(S.mode) ? 50 : 24);
 
   if (me && me.char && S.phase !== 'lobby') {
     if (me.hop >= 2) { ctx.textAlign = 'center'; ctx.fillStyle = '#ffd23f'; ctx.font = 'bold 28px system-ui'; ctx.fillText(`BHOP ×${me.hop}`, innerWidth / 2, 70); }
