@@ -10,7 +10,7 @@
   title.style.cssText = 'position:fixed;inset:0;z-index:21;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#fff;text-align:center;font-family:system-ui,"Segoe UI",sans-serif';
   title.innerHTML = `<div id="in-a" style="font:900 clamp(64px,14vw,180px)/1 system-ui;letter-spacing:.18em;padding-left:.18em;opacity:0;text-shadow:0 0 40px #4aa8ff88">AEC</div>
     <div id="in-b" style="margin-top:14px;font:600 clamp(14px,2.2vw,22px)/1.3 system-ui;letter-spacing:.32em;text-transform:uppercase;opacity:0;color:#cfe4ff">ALex Eval Corp <span style="color:#ffd23f">+</span> Mark &amp; Corp</div>
-    <div id="in-c" style="margin-top:28px;font:800 clamp(28px,5vw,56px)/1 system-ui;letter-spacing:.06em;opacity:0;color:#ffd23f">${document.title}</div>
+    <div id="in-c" style="margin-top:28px;font:800 clamp(28px,5vw,56px)/1 system-ui;letter-spacing:.06em;opacity:0;color:#ffd23f">${document.title.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</div>
     <div id="in-d" style="position:fixed;bottom:22px;font:500 12px system-ui;letter-spacing:.2em;color:#ffffff55">ЛЮБАЯ КЛАВИША, ЧТОБЫ ПРОПУСТИТЬ</div>`;
   document.body.append(cv, title);
   const ctx = cv.getContext('2d');
@@ -90,9 +90,12 @@
     cv.style.transition = title.style.transition = 'opacity .45s';
     cv.style.opacity = title.style.opacity = '0';
     setTimeout(() => { cv.remove(); title.remove(); }, 480);
-    removeEventListener('keydown', finish, true);
+    removeEventListener('keydown', skip, true);
+    removeEventListener('resize', fit);
   }
-  addEventListener('keydown', finish, true);
+  // клавиша пропуска не должна долететь до игры (4 и 5 кидают гранаты, Enter жмёт готов)
+  function skip(e) { e.stopImmediatePropagation(); e.preventDefault(); finish(); }
+  addEventListener('keydown', skip, true);
   cv.addEventListener('click', finish);
   raf = requestAnimationFrame(frame);
 })();

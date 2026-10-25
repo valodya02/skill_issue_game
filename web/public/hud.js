@@ -4,7 +4,7 @@
   const css = `
   #hud { position:fixed; inset:0; z-index:4; pointer-events:none; font:600 14px system-ui, "Segoe UI", sans-serif; color:#f3eefc; }
   #hud .k { display:inline-block; min-width:22px; padding:1px 6px; margin-right:6px; border:1px solid #ffffff55; border-bottom-width:3px; border-radius:5px; background:#0d0b14cc; color:#ffd23f; font:700 12px ui-monospace, monospace; text-align:center; }
-  #hud .glass { background:linear-gradient(180deg,#1a1626cc,#0d0b14dd); border:1px solid #ffffff1a; border-radius:10px; backdrop-filter:blur(4px); }
+  #hud .glass { background:linear-gradient(180deg,#1a1626cc,#0d0b14dd); border:1px solid #ffffff1a; border-radius:10px; }
   #hud-hp { position:absolute; left:16px; bottom:16px; padding:10px 14px; min-width:210px; }
   #hud-hp b { font-size:34px; letter-spacing:-1px; }
   #hud-hp .bar { height:6px; border-radius:3px; background:#ffffff1a; margin:6px 0 8px; overflow:hidden; }
@@ -54,6 +54,7 @@
 
   const keyOf = { q: 'Q', e: 'E', r: 'R' };
   let last = '';
+  const cache = {};
   function render() {
     if (typeof S === 'undefined' || !S || !meta) { el.style.display = 'none'; return; }
     const me = S.players.find((p) => p.id === meta.you);
@@ -104,16 +105,21 @@
       ${k('B')}магазин · ${k('V')}вид · ${k('H')}скрыть
       <div class="tip">💡 ${tip}</div>`;
 
-    const html = `${hp}|${me.money}|${me.tokens}|${slots}|${skills}|${act}|${helpOpen}|${tip}`;
-    if (html === last) return;
-    last = html;
+    // мёртвому подсказки действий и скиллы не нужны
+    if (!me.alive) act = '';
+    const skillsShown = me.alive ? skills : '';
+    // каждый блок перерисовывается только когда поменялся он сам, а не весь HUD
+    const put = (id, html) => { if (cache[id] !== html) { cache[id] = html; q(id).innerHTML = html; } };
+    put('hud-slots', slots);
+    put('hud-skills', skillsShown);
+    put('hud-act', act); q('hud-act').style.display = act ? 'block' : 'none';
+    put('hud-help', help); q('hud-help').style.display = helpOpen ? 'block' : 'none';
+    const hpKey = `${hp}|${me.money}|${me.tokens}`;
+    if (hpKey === last) return;
+    last = hpKey;
     q('hud-hp').innerHTML = `<b style="color:${frac > 0.5 ? '#f3eefc' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'}">${hp}</b> <span class="muted">${esc(c.name)}</span>
       <div class="bar"><i style="width:${Math.max(0, Math.min(100, frac * 100))}%;background:${frac > 0.5 ? '#5dff9b' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'}"></i></div>
       <span class="money">${me.money}$</span> <span style="color:#a79cbf">🪙 ${me.tokens}</span>`;
-    q('hud-slots').innerHTML = slots;
-    q('hud-skills').innerHTML = skills;
-    q('hud-act').innerHTML = act; q('hud-act').style.display = act ? 'block' : 'none';
-    q('hud-help').innerHTML = help; q('hud-help').style.display = helpOpen ? 'block' : 'none';
   }
   setInterval(render, 100);
 })();

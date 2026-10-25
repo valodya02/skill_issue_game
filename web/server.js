@@ -333,7 +333,7 @@ function fire(room, p, tx, ty) {
   p.lastShot = t;
   const first = p.burst === 0 && Math.hypot(p.vx || 0, p.vy || 0) < 40 && (p.z || 0) <= 2;
   const spread = fast && !turret ? (first ? 0 : inaccuracy(p)) : 0;
-  const drift = fast && n === 1 ? sprayOffset(p.burst) : 0;
+  const drift = fast && n === 1 && !turret ? sprayOffset(p.burst) : 0;
   if (fast) p.recoil = Math.min(0.08, (p.recoil || 0) + (w.rate < 200 ? 0.015 : 0.03));
   for (let i = 0; i < n; i++) {
     const jitter = (has(p, 'jitter') ? (Math.random() * 2 - 1) * 20 * Math.PI / 180 : 0) + (Math.random() * 2 - 1) * spread;
