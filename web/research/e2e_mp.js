@@ -45,6 +45,8 @@ async function connect(code, mode, name) {
   active.add(socket);
   const client = { socket, state: null, id: null, times: [], positions: [], disconnected: 0, events: [], terminal: null };
   socket.on('state', (state) => {
+    client.wc = client.wc || new Map();  // сервер шлёт оружие только при смене
+    for (const p of state.players) { if (p.weapon) client.wc.set(p.id, p.weapon); else p.weapon = client.wc.get(p.id); }
     const t = performance.now();
     if (client.lastState) client.times.push(t - client.lastState);
     client.lastState = t;
@@ -90,9 +92,19 @@ function input(c, fields = {}, target) {
 function stop(c) { input(c); }
 async function walk(c, point, ms = 14000, radius = 35) {
   const deadline = performance.now() + ms;
+  let mark = null, side = 1;
   while (performance.now() < deadline) {
     const me = own(c);
     if (me && distance(me, point) <= radius) { stop(c); return; }
+    // упёрся (бабка, машина, угол): 300 мс шаг вбок, потом снова к цели
+    if (!mark || performance.now() - mark.t > 600) {
+      if (mark && distance(me, mark) < 4) {
+        const vertical = Math.abs(point.y - me.y) > Math.abs(point.x - me.x);
+        input(c, vertical ? { r: +(side > 0), l: +(side < 0) } : { d: +(side > 0), u: +(side < 0) }, point);
+        side = -side; await sleep(300);
+      }
+      mark = { t: performance.now(), x: own(c).x, y: own(c).y };
+    }
     input(c, { r: +(point.x > me.x + 8), l: +(point.x < me.x - 8), d: +(point.y > me.y + 8), u: +(point.y < me.y - 8) }, point);
     await sleep(70);
   }

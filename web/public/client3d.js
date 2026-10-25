@@ -259,7 +259,8 @@ addEventListener('mousedown', () => { if (locked()) gunKick = 1; });
 function placeFps(dt, me, o) {
   if (!yawSet) { yaw = me.ang; yawSet = true; }  // первый кадр смотрит туда же, куда персонаж
   const h = o ? o.h : 0;
-  camera.position.set(wx(me.x), GROUND + EYE + h + (me.alive ? 0 : -1.4), wz(me.y));
+  // камера едет за сглаженной позицией, а не прыгает по снапшотам 30 Гц
+  camera.position.set(o ? o.x : wx(me.x), GROUND + EYE + h + (me.alive ? 0 : -1.4), o ? o.z : wz(me.y));
   const cp = Math.cos(pitch);
   camera.lookAt(camera.position.x + Math.cos(yaw) * cp, camera.position.y + Math.sin(pitch), camera.position.z + Math.sin(yaw) * cp);
   if (shake > 0.01) { camera.rotation.z += (Math.random() - 0.5) * shake * 0.003; shake *= Math.exp(-dt * 8); }
@@ -323,7 +324,8 @@ function frame(now) {
     if (!o || o.char !== p.char) { if (o) world.remove(o.root); o = makePlayer(p.char); o.x = wx(p.x); o.z = wz(p.y); players.set(p.id, o); }
     const hidden = p.st?.stealth && me && p.team !== me.team;
     o.seen = hidden ? -1 : frameNo;
-    o.x += (wx(p.x) - o.x) * k; o.z += (wz(p.y) - o.z) * k;
+    const kp = p.id === meta.you ? 1 - Math.exp(-dt * 30) : k;  // свой персонаж ближе к серверу
+    o.x += (wx(p.x) - o.x) * kp; o.z += (wz(p.y) - o.z) * kp;
     o.h += ((p.z || 0) / SCALE - o.h) * k;
     let da = (Math.PI / 2 - p.ang) - o.ang; da = Math.atan2(Math.sin(da), Math.cos(da));
     o.ang += da * k;
@@ -334,6 +336,13 @@ function frame(now) {
     o.rig.position.y = p.alive ? o.h : 0.2;
     o.ring.material = p.id === meta.you ? MAT.me : MAT.team[p.team] || MAT.team[0];
     o.shadow.scale.setScalar(1 - Math.min(0.5, o.h * 0.3));
+    if (o.wid !== (p.weapon?.id || '')) {               // оружие в руках из того же рецепта, что и вид от первого лица
+      o.wid = p.weapon?.id || '';
+      o.rig.remove(o.gun);
+      o.gun = p.weapon?.model?.parts ? buildWeapon(p.weapon.model) : mesh(G.box, MAT.dark, 0.1, 0.1, 0.6, 0, 0, 0);
+      o.gun.position.set(0.3, 0.75, 0.3); o.gun.rotation.y = Math.PI;  // ствол рецепта смотрит по -z, персонаж по +z
+      o.rig.add(o.gun);
+    }
     o.screen = p;
     if (p.id === meta.you) o.root.visible = !firstPerson;
   }

@@ -79,7 +79,7 @@ async function connect(roomCode, mode, name) {
   socket.on('connect', () => { c.id = socket.id; socket.emit('join', { code: roomCode, mode, name }); });
   socket.on('connect_error', e => { c.error = e.message; });
   socket.on('nope', e => { c.error = `join refused: ${e}`; });
-  socket.on('state', s => { c.state = s; observe(c, s); });
+  socket.on('state', s => { c.wc = c.wc || new Map(); for (const p of s.players) { if (p.weapon) c.wc.set(p.id, p.weapon); else p.weapon = c.wc.get(p.id); } c.state = s; observe(c, s); });
   socket.on('fx', e => c.events.push(e));
   socket.on('terminal', e => { c.terminal = e; });
   await until(() => { if (c.error) throw Error(c.error); return c.id && own(c); }, 7000, 'connect');

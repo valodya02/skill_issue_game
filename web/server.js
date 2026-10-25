@@ -20,7 +20,8 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build')));
 const server = http.createServer(app);
-const io = new Server(server);
+// только websocket: без long-polling и апгрейда, сжатие выкл (снапшоты мелкие, CPU дороже)
+const io = new Server(server, { transports: ['websocket'], perMessageDeflate: false });
 
 const rooms = new Map();
 const now = () => Date.now();
@@ -46,6 +47,7 @@ function getRoom(code, mode) {
       code, mode: ['1v1', '2v2', 'dm'].includes(mode) ? mode : '1v1', phase: 'lobby', map,
       players: new Map(), shots: [], pending: [], zones: [], walls: [], drops: [],
       npcs: [], turrets: [], bomb: null, score: [0, 0], roundWinner: null, phaseUntil: 0, winner: null,
+      sentW: new Map(),  // кому какое оружие уже ушло в снапшоте
     });
   }
   return rooms.get(code);
@@ -168,8 +170,8 @@ function aoeHit(room, src, x, y, r, dmg, fx) {
 }
 
 // --- скиллы ---
-// Режим КС: только оружие, гранаты, бомба. Скиллы персонажей Q/E/R включаются SKILLS=1
-const SKILLS = process.env.SKILLS === '1';
+// Скиллы персонажей Q/E/R включены; чистый режим КС (только оружие, гранаты, бомба) через SKILLS=0
+const SKILLS = process.env.SKILLS !== '0';
 // Пули огнестрела летят почти как хитскан, метательное остаётся видимым
 const FAST = new Set(['pistol', 'tapok', 'makaroni', 'baguette', 'turret_mg']);
 // Разброс как в КС, радианы: стоишь точно, бежишь и прыгаешь мажешь. Клиент рисует прицел по этому же числу
@@ -509,6 +511,8 @@ function step(room, dt) {
     const m = Math.hypot(mx, my);
     if (m) { mx /= m; my /= m; }
     if (p.turret) { mx = 0; my = 0; p.vx = 0; p.vy = 0; p.input.j = 0; }
+    // ввод кода как плент в КС: стоишь намертво, нажал движение = отменил
+    if (p.hold) { if (m) cancelCode(room, p); else { p.vx = 0; p.vy = 0; p.input.j = 0; } }
     const moveFx = movePlayer(p, dt, mx, my, sp, map, fieldW, fieldH, PR, t);
     if (p.recoil) p.recoil = Math.max(0, p.recoil - dt * 0.12);
     if (moveFx.jumped) emitFx(room, { k: moveFx.hopped ? 'hop' : 'jump', x: p.x, y: p.y });
@@ -642,7 +646,9 @@ function snapshot(room) {
     players: [...room.players.values()].map((p) => ({
       id: p.id, name: p.name, team: p.team, char: p.char, ready: p.ready, bot: p.bot,
       x: Math.round(p.x), y: Math.round(p.y), hp: Math.round(p.hp), alive: p.alive, ang: +p.ang.toFixed(2), kills: p.kills,
-      money: p.money, tokens: p.tokens, forging: !!p.forging, weapon: p.weapon,
+      money: p.money, tokens: p.tokens, forging: !!p.forging,
+      // оружие с 3D-моделью весит ~300 байт: шлём только при смене, клиент держит кэш
+      ...(room.sentW.get(p.id) !== p.weapon && room.sentW.set(p.id, p.weapon) ? { weapon: p.weapon } : {}),
       z: Math.round(p.z), hop: p.hop || 0, spr: +inaccuracy(p).toFixed(3), grenade: p.grenade, grenades: p.grenades, turret: p.turret,
       cd: Object.fromEntries(Object.entries(p.cd).map(([k, v]) => [k, Math.max(0, v - t)])),
       st: Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t])),
@@ -666,7 +672,8 @@ function runTick() {
   last = t;
   for (const room of rooms.values()) {
     step(room, dt);
-    io.to(room.code).emit('state', snapshot(room));
+    // volatile: забитый сокет пропускает кадр, а не копит очередь из старых снапшотов
+    io.to(room.code).volatile.emit('state', snapshot(room));
   }
 }
 if (require.main === module) setInterval(runTick, 1000 / TICK);
@@ -688,6 +695,7 @@ io.on('connection', (sock) => {
     room = r;
     sock.join(code);
     addPlayer(room, sock.id, name);
+    room.sentW.clear();  // новичок должен получить оружие всех
     sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id, skills: SKILLS });
   });
   sock.on('pick', (cid) => { const p = me(); if (p && CHARS[cid] && room.phase === 'lobby') { p.char = cid; tryStart(room); } });
@@ -697,15 +705,17 @@ io.on('connection', (sock) => {
     const other = 1 - p.team, half = slots(room) / 2;
     if ([...room.players.values()].filter((o) => o.team === other).length < half) p.team = other;
   });
+  // режим и ботов меняет только хост: первый живой человек в комнате
+  const isHost = () => !!room && [...room.players.values()].find((o) => !o.bot)?.id === sock.id;
   sock.on('mode', (mode) => {
-    if (!room || room.phase !== 'lobby' || !['1v1', '2v2', 'dm'].includes(mode)) return;
+    if (!isHost() || room.phase !== 'lobby' || !['1v1', '2v2', 'dm'].includes(mode)) return;
     if (mode === '1v1' && room.players.size > 2) return sock.emit('nope', 'Слишком много игроков для 1 на 1');
     room.mode = mode;
     let i = 0;
     for (const p of room.players.values()) p.team = mode === 'dm' ? i++ : i++ % 2;
   });
   sock.on('addBot', () => {
-    if (!room || room.phase !== 'lobby' || room.players.size >= slots(room)) return;
+    if (!isHost() || room.phase !== 'lobby' || room.players.size >= slots(room)) return;
     addPlayer(room, 'bot' + uid++, ['Сигма-бот', 'NPC', 'Кринж-бот', 'Скуф'][Math.floor(Math.random() * 4)], true);
     tryStart(room);
   });

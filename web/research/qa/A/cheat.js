@@ -25,7 +25,7 @@ async function connect(roomCode, mode = '1v1') {
   const socket = io(url, { transports: ['websocket', 'polling'], reconnection: false, timeout: 3000, forceNew: true });
   sockets.add(socket);
   const c = { socket, roomCode, state: null, states: 0, nope: null, terminal: null, fx: [] };
-  socket.on('state', s => { c.state = s; c.states++; });
+  socket.on('state', s => { c.wc = c.wc || new Map(); for (const p of s.players) { if (p.weapon) c.wc.set(p.id, p.weapon); else p.weapon = c.wc.get(p.id); } c.state = s; c.states++; });
   socket.on('nope', x => { c.nope = x; });
   socket.on('terminal', x => { c.terminal = x; });
   socket.on('fx', x => { c.fx.push(x); });
@@ -163,9 +163,12 @@ async function main() {
     return verdict(a.state.pending.length > before, `pending ${before} -> ${a.state.pending.length}, cd ${cd}`);
   });
   await attack('grenade without purchase', async () => {
-    const before = a.state.pending.length;
+    // в pending летят и камни с луками второго игрока: считаем только облака гранат (r 110 кофе, 130 дым)
+    if (own(a).grenade) return skip(`player already holds ${own(a).grenade}`);
+    const nades = () => a.state.pending.filter((x) => x.r === 110 || x.r === 130).length;
+    const before = nades();
     emit(a, 'grenade', { x: 400, y: 450 }); await sleep(100);
-    return verdict(a.state.pending.length > before, `pending ${before} -> ${a.state.pending.length}`);
+    return verdict(nades() > before, `grenade clouds ${before} -> ${nades()}, all pending ${a.state.pending.length}`);
   });
   await attack('damage after death, friendly fire 2v2', async () => skip('requires controlled kill and four-player setup'));
   await attack('dead terminal and code after explosion', async () => skip('requires controlled death and 35 s planted bomb setup'));

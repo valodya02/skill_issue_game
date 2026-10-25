@@ -2,7 +2,7 @@
 const { ECON, SHOP, KIOSK = {} } = WEAPONS;
 const $ = (id) => document.getElementById(id);
 const cv = $('cv'), ctx = cv.getContext('2d');
-const sock = io();
+const sock = io({ transports: ['websocket'] });  // сразу websocket, без polling-рукопожатия
 
 let meta = null, S = null;           // S — последний снапшот
 let gameMap = null;
@@ -114,7 +114,11 @@ function renderShop(me) {
 // ---------- сеть ----------
 let prevPhase = null;
 let prevWeaponId = null;
+const weaponOf = new Map();  // сервер шлёт оружие только при смене
 sock.on('state', (s) => {
+  for (const p of s.players) {
+    if (p.weapon) weaponOf.set(p.id, p.weapon); else p.weapon = weaponOf.get(p.id);
+  }
   S = s;
   if (meta && meta.mode !== s.mode) {
     meta.mode = s.mode;
