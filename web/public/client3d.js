@@ -36,8 +36,13 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 600);
 const post = createPost(renderer, scene, camera, { outline: true, preset: 'off' });
 sky(scene); fog(scene, 'autumn');
+const GROUND = 0.12;                                 // верх плиты земли в map3d.js
+const BODY = 1.5;                                   // рост болванчика ~2.1 юнита при радиусе сервера 28 px
+const EYE = 1.75;
 const world = new THREE.Group();
+world.position.y = GROUND;                          // всё динамическое стоит на земле, а не в ней
 scene.add(world);
+scene.add(camera);
 
 // ---------- общие геометрии и материалы, ноль аллокаций в кадре ----------
 const G = {
@@ -100,6 +105,7 @@ function makePlayer(char) {
   rig.add(hat(c.model?.hat, accent));
   const gun = mesh(G.box, MAT.dark, 0.1, 0.1, 0.6, 0.3, 0.75, 0.3);
   rig.add(gun);
+  rig.scale.setScalar(BODY);
   root.add(shadow, ring, rig);
   world.add(root);
   return { root, ring, rig, shadow, gun, x: 0, z: 0, h: 0, ang: 0, char, seen: 0 };
@@ -107,6 +113,7 @@ function makePlayer(char) {
 
 function makeGranny() {
   const root = new THREE.Group();
+  root.scale.setScalar(BODY);
   root.add(mesh(G.cone, MAT.granny, 0.7, 0.9, 0.7, 0, 0.45, 0));
   root.add(mesh(G.head, MAT.skin, 0.9, 0.9, 0.9, 0, 1.06, 0));
   root.add(mesh(G.sphere, MAT.scarf, 0.48, 0.34, 0.48, 0, 1.2, -0.03));
@@ -145,12 +152,13 @@ function put(im, i, x, y, z, sx, sy, sz, ry = 0) {
 function flush(im, n) { im.count = n; im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; }
 
 // ---------- карта ----------
-let builtFor = null;
+let builtFor = null, mapGroup = null;
 async function ensureMap(map) {
   if (!map || builtFor === map) return;
   builtFor = map;
   scene.userData.map = map;
   const built = await buildMap(scene, map);
+  mapGroup = built.group;
   lights(scene, 'autumn');
   applyLook(built.group);              // только карта: снаряды и зоны остаются прозрачными MeshBasic
   for (const v of map.turrets || []) {
@@ -176,7 +184,50 @@ function fitCamera() {
   const needH = Math.max(22.5 * 1.05, 40 * 1.05 / aspect);   // поле 40×22.5 юнитов
   camDist = needH / 2 / Math.tan(halfV) * 0.92;
 }
-const PITCH = THREE.MathUtils.degToRad(58);
+const PITCH = THREE.MathUtils.degToRad(72);       // круче, чтобы панельки не закрывали игроков
+
+// ---------- вид от первого лица: V переключает, клик захватывает мышь ----------
+let fpView = params.get('view') !== 'top';
+let yaw = 0, pitch = 0, yawSet = false;
+const cross = document.createElement('div');
+cross.style.cssText = 'position:fixed;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;z-index:3;pointer-events:none;display:none;' +
+  'background:linear-gradient(#fff,#fff) center/2px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 2px no-repeat;filter:drop-shadow(0 0 2px #000)';
+document.body.append(cross);
+const hint = document.createElement('div');
+hint.textContent = 'клик: захват мыши · V: вид сверху / от первого лица · Esc: отпустить';
+hint.style.cssText = 'position:fixed;left:50%;top:58%;transform:translateX(-50%);z-index:3;pointer-events:none;color:#fff;font:600 14px system-ui;text-shadow:0 1px 3px #000;display:none';
+document.body.append(hint);
+const viewGun = new THREE.Group();                  // пушка в руке, висит на камере
+viewGun.add(mesh(G.box, MAT.dark, 0.09, 0.11, 0.55, 0, 0, 0));
+viewGun.add(mesh(G.box, MAT.dark, 0.07, 0.16, 0.08, 0, -0.1, 0.12));
+viewGun.scale.setScalar(0.45);
+viewGun.position.set(0.2, -0.17, -0.42);
+viewGun.visible = false;
+camera.add(viewGun);
+const cv2d = document.getElementById('cv');
+const locked = () => document.pointerLockElement === cv2d;
+const shopOpen = () => { const el = document.getElementById('shop'); return el && !el.classList.contains('hidden'); };
+cv2d?.addEventListener('click', () => { if (on && fpView && !locked() && !shopOpen()) cv2d.requestPointerLock?.(); });
+addEventListener('mousemove', (e) => {
+  if (!locked()) return;
+  yaw += e.movementX * 0.0025;
+  pitch = THREE.MathUtils.clamp(pitch - e.movementY * 0.0025, -1.1, 1.1);
+});
+let gunKick = 0;
+addEventListener('mousedown', () => { if (locked()) gunKick = 1; });
+
+function placeFps(dt, me, o) {
+  if (!yawSet) { yaw = me.ang; yawSet = true; }  // первый кадр смотрит туда же, куда персонаж
+  const h = o ? o.h : 0;
+  camera.position.set(wx(me.x), GROUND + EYE + h + (me.alive ? 0 : -1.4), wz(me.y));
+  const cp = Math.cos(pitch);
+  camera.lookAt(camera.position.x + Math.cos(yaw) * cp, camera.position.y + Math.sin(pitch), camera.position.z + Math.sin(yaw) * cp);
+  if (shake > 0.01) { camera.rotation.z += (Math.random() - 0.5) * shake * 0.003; shake *= Math.exp(-dt * 8); }
+  gunKick *= Math.exp(-dt * 14);
+  viewGun.position.z = -0.42 + gunKick * 0.05;
+  viewGun.rotation.x = gunKick * 0.25;
+}
+
 function placeCamera(dt, me) {
   const tx = me ? THREE.MathUtils.clamp(wx(me.x) * 0.15, -3, 3) : 0;
   const tz = me ? THREE.MathUtils.clamp(wz(me.y) * 0.15, -2, 2) : 0;
@@ -208,6 +259,13 @@ function frame(now) {
   const k = 1 - Math.exp(-dt * 18);                 // сглаживание между тиками 30 Гц
   const me = S.players.find((p) => p.id === meta.you);
 
+  const firstPerson = fpView && me;
+  if (firstPerson && camera.fov !== 75) { camera.fov = 75; camera.near = 0.05; camera.updateProjectionMatrix(); }
+  if (!firstPerson && camera.fov !== 42) { camera.fov = 42; camera.near = 0.5; camera.updateProjectionMatrix(); fitCamera(); }
+  if (locked() && (shopOpen() || S.phase !== 'playing' && S.phase !== 'buy')) document.exitPointerLock();
+  cross.style.display = firstPerson ? 'block' : 'none';
+  hint.style.display = firstPerson && !locked() && S.phase === 'playing' ? 'block' : 'none';
+  viewGun.visible = !!(firstPerson && me.alive);
   for (const p of S.players) {
     if (!p.char) continue;
     let o = players.get(p.id);
@@ -226,8 +284,10 @@ function frame(now) {
     o.ring.material = p.id === meta.you ? MAT.me : MAT.team[p.team] || MAT.team[0];
     o.shadow.scale.setScalar(1 - Math.min(0.5, o.h * 0.3));
     o.screen = p;
+    if (p.id === meta.you) o.root.visible = !firstPerson;
   }
   sweep(players);
+  if (firstPerson) { const mine = players.get(me.id); if (mine) mine.root.visible = false; }
 
   for (const n of S.npcs || []) {
     let o = grannies.get(n.id);
@@ -275,7 +335,7 @@ function frame(now) {
     prevHp = me.hp; prevAlive = me.alive;
   }
 
-  placeCamera(dt, me);
+  if (firstPerson) placeFps(dt, me, players.get(me.id)); else placeCamera(dt, me);
   renderer.info.reset();
   post.render(dt);
   if (stats.style.display !== 'none') {
@@ -296,16 +356,36 @@ addEventListener('resize', () => {
 });
 addEventListener('keydown', (e) => {
   if (e.code === 'F9') { e.preventDefault(); if (gl2) on = !on; }
+  if (e.code === 'KeyV' && e.target.tagName !== 'INPUT') { fpView = !fpView; if (!fpView && locked()) document.exitPointerLock(); }
   if (e.code === 'F3') { e.preventDefault(); stats.style.display = stats.style.display === 'none' ? 'block' : 'none'; }
 });
 
 // ---------- API для client.js ----------
-const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.75), hit = new THREE.Vector3();
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(0.75 + GROUND)), hit = new THREE.Vector3();
+const DIR = new THREE.Vector3(), TO = new THREE.Vector3();
+const myPos = () => { const V = window.GAME_VIEW; return V?.S?.players.find((p) => p.id === V.meta?.you); };
 const proj = new THREE.Vector3();
 window.GAME3D = {
   get on() { return on && !!builtFor; },
+  get fps() { return on && !!builtFor && fpView; },
+  // WASD относительно взгляда → мировой вектор mx/my для сервера; вне FPS undefined, работают u/d/l/r
+  move(keys) {
+    if (!this.fps) return undefined;
+    const f = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), r = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0);
+    return { mx: Math.cos(yaw) * f - Math.sin(yaw) * r, my: Math.sin(yaw) * f + Math.cos(yaw) * r };
+  },
+  // виден ли с камеры кусок мира (для подписей в FPS, иначе ники светят сквозь дома)
+  sees(x, y, h) {
+    if (!this.fps || !mapGroup) return true;
+    TO.set(wx(x), GROUND + h, wz(y));
+    DIR.subVectors(TO, camera.position); const d = DIR.length(); DIR.normalize();
+    ray.set(camera.position, DIR); ray.far = d - 0.3;
+    return ray.intersectObject(mapGroup, true).length === 0;
+  },
   // экран → мир сервера (px), прицел на высоте груди
   pick(cx, cy) {
+    if (this.fps) { const me = myPos(); if (me) return { x: me.x + Math.cos(yaw) * 600, y: me.y + Math.sin(yaw) * 600 }; }
+    ray.far = Infinity;
     ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     if (!ray.ray.intersectPlane(plane, hit)) return { x: 0, y: 0 };
@@ -313,7 +393,7 @@ window.GAME3D = {
   },
   // мир сервера (px) + высота в юнитах → экран (css px), для подписей на 2D-холсте
   project(x, y, h = 0) {
-    proj.set(wx(x), h, wz(y)).project(camera);
+    proj.set(wx(x), h + GROUND, wz(y)).project(camera);
     return { x: (proj.x + 1) / 2 * innerWidth, y: (1 - proj.y) / 2 * innerHeight, front: proj.z < 1 };
   },
   fx(f) {

@@ -272,7 +272,7 @@ const toWorld = (x, y) => (in3d() ? window.GAME3D.pick(x, y) : { x: (x - ox) / s
 setInterval(() => {
   if (!meta || !S) return;
   const w = toWorld(mouse.x, mouse.y);
-  sock.emit('input', { u: keys.KeyW, d: keys.KeyS, l: keys.KeyA, r: keys.KeyD, j: keys.Space, g: keys.KeyG, ax: w.x, ay: w.y });
+  sock.emit('input', { u: keys.KeyW, d: keys.KeyS, l: keys.KeyA, r: keys.KeyD, j: keys.Space, g: keys.KeyG, ax: w.x, ay: w.y, ...window.GAME3D?.move?.(keys) });
   if (mouse.down && S.phase === 'playing' && $('shop').classList.contains('hidden')) sock.emit('cast', { slot: 'a', ...w });
 }, 1000 / 30);
 
@@ -477,9 +477,10 @@ function labels3d(me, t) {
   const smoke = S.zones.filter((z) => z.kind === 'smoke');
   for (const p of S.players) {
     if (!p.char || !p.alive) continue;
+    if (G.fps && p.id === meta.you) continue;
     if (me && p.team !== me.team && (p.st.stealth || smoke.some((z) => Math.hypot(p.x - z.x, p.y - z.y) < z.r))) continue;
-    const c = CHARS[p.char], s = G.project(p.x, p.y, 1.9 + (p.z || 0) / 40);
-    if (!s.front) continue;
+    const c = CHARS[p.char], h = 2.6 + (p.z || 0) / 40, s = G.project(p.x, p.y, h);
+    if (!s.front || !G.sees(p.x, p.y, h - 0.6)) continue;
     const hpw = 54, frac = p.hp / c.hp;
     ctx.fillStyle = '#000a'; ctx.fillRect(s.x - hpw / 2, s.y, hpw, 6);
     ctx.fillStyle = frac > 0.5 ? '#5dff9b' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'; ctx.fillRect(s.x - hpw / 2, s.y, hpw * frac, 6);

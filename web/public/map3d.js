@@ -32,11 +32,12 @@ export async function buildMap(scene, map) {
   function block(color, x, y, w, h, height, solid = false, base = 0) {
     instance('box', color, wx(x + w / 2), base + height / 2, wz(y + h / 2), w / SCALE, height, h / SCALE, solid);
   }
+  // radius в пикселях карты, высота в юнитах
   function pole(color, x, y, radius, height, solid = false) {
-    instance('cylinder', color, wx(x), height / 2, wz(y), radius * 2, height, radius * 2, solid);
+    instance('cylinder', color, wx(x), height / 2, wz(y), radius * 2 / SCALE, height, radius * 2 / SCALE, solid);
   }
   function crown(color, x, y, radius, height, base) {
-    instance('cone', color, wx(x), base + height / 2, wz(y), radius * 2, height, radius * 2);
+    instance('cone', color, wx(x), base + height / 2, wz(y), radius * 4 / SCALE, height, radius * 4 / SCALE);   // тополь чуть пышнее хитбокса
   }
   function canvasTexture(draw, w = 512, h = 256) {
     const canvas = document.createElement('canvas');

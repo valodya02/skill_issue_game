@@ -697,8 +697,9 @@ io.on('connection', (sock) => {
   });
   sock.on('input', (inp) => {
     const p = me(); if (!p || typeof inp !== 'object') return;
-    const n = (v) => (Number.isFinite(+v) ? +v : 0);
-    p.input = { u: !!inp.u, d: !!inp.d, l: !!inp.l, r: !!inp.r, j: !!inp.j, g: !!inp.g, ax: n(inp.ax), ay: n(inp.ay), mx: n(inp.mx), my: n(inp.my) };
+    const n = (v, d) => (v != null && Number.isFinite(+v) ? +v : d);
+    // mx/my без значения остаются undefined, иначе вектор 0 глушит WASD
+    p.input = { u: !!inp.u, d: !!inp.d, l: !!inp.l, r: !!inp.r, j: !!inp.j, g: !!inp.g, ax: n(inp.ax, 0), ay: n(inp.ay, 0), mx: n(inp.mx), my: n(inp.my) };
   });
   sock.on('terminal', () => { const p = me(); if (p) startCode(room, p, now()); });
   sock.on('code', ({ key } = {}) => { const p = me(); if (p) codeInput(room, p, key, now()); });
