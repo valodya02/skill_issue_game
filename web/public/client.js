@@ -10,7 +10,7 @@ const view = new Map();              // сглаженные позиции иг
 const fxs = [];                      // визуальные эффекты
 let shake = 0, banner = null, mouse = { x: 0, y: 0, down: false };
 let terminal = null;
-const sound = (name, x, y) => { if (window.SFX?.play) window.SFX.play(name, { x, y }); };
+const sound = (name, x, y, weapon) => { if (window.SFX?.play) window.SFX.play(name, { x, y, weapon }); };
 const keys = {};
 let scale = 1, ox = 0, oy = 0;
 
@@ -111,6 +111,7 @@ function renderShop(me) {
 
 // ---------- сеть ----------
 let prevPhase = null;
+let prevWeaponId = null;
 sock.on('state', (s) => {
   S = s;
   if (meta && meta.mode !== s.mode) {
@@ -118,6 +119,13 @@ sock.on('state', (s) => {
     history.replaceState(null, '', `?room=${meta.code}&mode=${s.mode}`);
   }
   const me = s.players.find((p) => p.id === meta?.you);
+  if (me) {
+    window.SFX?.setListener?.(me.x, me.y);
+    if (prevWeaponId && prevWeaponId !== me.weapon?.id && SHOP[me.weapon?.id]?.sfx) {
+      sound('reload', me.x, me.y, me.weapon.id);
+    }
+    prevWeaponId = me.weapon?.id;
+  }
   $('lobby').classList.toggle('hidden', s.phase !== 'lobby');
   $('end').classList.toggle('hidden', s.phase !== 'matchEnd');
   if (s.phase === 'lobby') renderLobby();
@@ -133,7 +141,14 @@ sock.on('state', (s) => {
 
 sock.on('fx', (f) => {
   const t = performance.now();
-  if (['shot', 'boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'plant', 'defuse', 'turret', 'kill', 'round'].includes(f.k)) sound(f.k, f.x, f.y);
+  if (['shot', 'turret'].includes(f.k)) {
+    const shooter = S?.players.reduce((best, p) => {
+      const d = Math.hypot(p.x - f.x, p.y - f.y);
+      return d < best.d ? { p, d } : best;
+    }, { p: null, d: Infinity });
+    const weapon = shooter?.d < 60 ? (f.k === 'turret' && shooter.p.turret ? 'turret_mg' : shooter.p.weapon?.id) : null;
+    sound(f.k === 'turret' ? 'shot' : f.k, f.x, f.y, weapon);
+  } else if (['boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'plant', 'defuse', 'kill', 'round'].includes(f.k)) sound(f.k, f.x, f.y);
   if (f.k === 'feed') toast(esc(f.text));
   if (f.k === 'banner') banner = { text: f.text, until: t + 1800 };
   if (f.k === 'dmg') fxs.push({ k: 'txt', x: f.x, y: f.y - 30, text: '-' + f.v, color: '#ff6b6b', t, life: 700 });

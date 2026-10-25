@@ -6,6 +6,11 @@
   var musicBus = null;
   var noiseBuffer = null;
   var voices = [];
+  var samples = Object.create(null);
+  var sampleNames = ['shot_22', 'shot_556', 'shot_762', 'shot_54r', 'shot_double',
+    'reload_ar', 'reload_ak', 'reload_pump', 'bolt_mosin', 'rack_pistol'];
+  var sampleBase = typeof document !== 'undefined' && document.currentScript
+    ? new URL('sfx/', document.currentScript.src).href : 'sfx/';
   var listener = { x: 800, y: 450 };
   var level = 0.8;
   var musicWanted = false;
@@ -32,6 +37,7 @@
         noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
         var data = noiseBuffer.getChannelData(0);
         for (var i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        loadSamples();
       } catch (error) {
         ctx = null;
         return;
@@ -39,6 +45,20 @@
     }
     if (ctx.state === 'suspended') ctx.resume().catch(function () {});
     if (musicWanted && !clock) startMusic();
+  }
+
+  function loadSamples() {
+    if (typeof root.fetch !== 'function') return;
+    sampleNames.forEach(function (name) {
+      root.fetch(sampleBase + name + '.mp3')
+        .then(function (response) {
+          if (!response.ok) throw new Error('sample ' + name + ': ' + response.status);
+          return response.arrayBuffer();
+        })
+        .then(function (bytes) { return ctx.decodeAudioData(bytes); })
+        .then(function (buffer) { samples[name] = buffer; })
+        .catch(function (error) { console.warn('SFX sample unavailable:', name, error); });
+    });
   }
 
   if (typeof document !== 'undefined') {
@@ -127,9 +147,30 @@
     v.nodes.push(filter, envelope);
   }
 
+  function sampleFor(name, opts) {
+    if (name !== 'shot' && name !== 'reload') return null;
+    var weapon = root.WEAPONS && root.WEAPONS.SHOP && root.WEAPONS.SHOP[opts.weapon];
+    var selected = opts.sample || (weapon && weapon.sfx && weapon.sfx[name]);
+    return sampleNames.indexOf(selected) !== -1 ? samples[selected] : null;
+  }
+
+  function playSample(buffer, opts) {
+    var rate = 0.94 + Math.random() * 0.12;
+    var v = voice(buffer.duration / rate, opts, false);
+    if (!v) return;
+    var source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = rate;
+    source.connect(v.input);
+    source.start(v.time);
+    v.sources.push(source);
+  }
+
   function play(name, opts) {
     if (!ctx) return;
     opts = opts || {};
+    var buffer = sampleFor(name, opts);
+    if (buffer) { playSample(buffer, opts); return; }
     var v;
     var n;
     switch (name) {
@@ -137,6 +178,12 @@
         v = voice(0.15, opts, false);
         tone(v, 'square', 270, 80, 0, 0.09, 0.19);
         noise(v, 0, 0.075, 0.42, 2400, true);
+        break;
+      case 'reload':
+        v = voice(0.3, opts, false);
+        noise(v, 0, 0.055, 0.17, 2600, true);
+        tone(v, 'square', 400, 180, 0.13, 0.08, 0.11);
+        noise(v, 0.17, 0.09, 0.12, 1700, true);
         break;
       case 'boom':
         v = voice(0.85, opts, false);

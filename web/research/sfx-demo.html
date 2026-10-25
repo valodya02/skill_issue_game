@@ -18,11 +18,17 @@
 <body>
   <main>
     <h1>Звуки двора</h1>
-    <p>Нажми кнопку, чтобы запустить WebAudio. Звуки целиком сделаны кодом.</p>
+    <p>Нажми кнопку, чтобы запустить WebAudio. Выстрелы и перезарядки огнестрела используют сэмплы F8 Studios, остальные звуки синтезируются.</p>
+    <h2>Синтез</h2>
     <div class="grid" id="sounds"></div>
+    <h2>Сэмплы</h2>
+    <div class="grid" id="samples"></div>
+    <h2>Оружие</h2>
+    <div class="grid" id="weapons"></div>
     <label><input type="checkbox" id="music"> Музыка лобби</label>
     <label>Громкость <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8"></label>
   </main>
+  <script src="../public/weapons.js"></script>
   <script src="../public/sfx.js"></script>
   <script>
     var names = ['shot', 'boom', 'jump', 'land', 'hop', 'coffee', 'smoke', 'code_ok', 'code_fail', 'plant', 'defuse', 'turret', 'kill', 'round', 'buy'];
@@ -34,6 +40,24 @@
         SFX.play(name, name === 'hop' ? { n: hops++ % 8 } : undefined);
       });
       document.getElementById('sounds').appendChild(button);
+    });
+    var sampleNames = ['shot_22', 'shot_556', 'shot_762', 'shot_54r', 'shot_double',
+      'reload_ar', 'reload_ak', 'reload_pump', 'bolt_mosin', 'rack_pistol'];
+    sampleNames.forEach(function (name) {
+      var button = document.createElement('button');
+      button.textContent = name;
+      button.addEventListener('click', function () {
+        SFX.play(name.indexOf('shot_') === 0 ? 'shot' : 'reload', { sample: name });
+      });
+      document.getElementById('samples').appendChild(button);
+    });
+    Object.keys(WEAPONS.SHOP).filter(function (id) { return WEAPONS.SHOP[id].sfx; }).forEach(function (id) {
+      ['shot', 'reload'].forEach(function (kind) {
+        var button = document.createElement('button');
+        button.textContent = WEAPONS.SHOP[id].name + ' · ' + kind;
+        button.addEventListener('click', function () { SFX.play(kind, { weapon: id }); });
+        document.getElementById('weapons').appendChild(button);
+      });
     });
     document.getElementById('music').addEventListener('change', function (event) { SFX.music(event.target.checked); });
     document.getElementById('volume').addEventListener('input', function (event) { SFX.volume(Number(event.target.value)); });

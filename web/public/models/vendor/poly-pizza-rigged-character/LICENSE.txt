@@ -1,0 +1,5 @@
+Source: https://poly.pizza/m/yiQDOLP4Ry
+Author: Rafael
+Model: Rigged Character
+License shown on source page: Public Domain (CC0)
+Direct GLB: https://static.poly.pizza/e992e5f8-3bea-4cca-80e7-8dac71689884.glb

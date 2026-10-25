@@ -18,6 +18,7 @@ const CHAR_IDS = Object.keys(CHARS);
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/vendor', express.static(path.join(__dirname, 'node_modules', 'three', 'build')));
 const server = http.createServer(app);
 const io = new Server(server);
 

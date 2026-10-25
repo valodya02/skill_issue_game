@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Спальник 3D: картинка</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#29343c;color:#f4e9d8;font:14px system-ui,sans-serif}
+    canvas{display:block}
+    #panel{position:fixed;left:18px;top:18px;padding:15px;background:#20232ac9;border:1px solid #d9ae78;border-radius:8px;max-width:430px}
+    h1{font-size:16px;margin:0 0 8px}
+    button{border:1px solid #d9ae78;background:#403b3a;color:#fff0d8;border-radius:4px;padding:6px 10px;margin:3px;cursor:pointer}
+    button:hover,button.active{background:#9c5b39}
+    #stats{position:fixed;right:18px;top:18px;padding:10px;background:#20232ad9;font:12px monospace;white-space:pre-line;display:none}
+    #error{color:#ff998e}
+  </style>
+</head>
+<body>
+  <div id="panel"><h1>Спальник: проверка картинки</h1><div id="presets"></div><div id="effects"></div><div>P: смена пресета. F3: счётчики.</div><div id="error"></div></div>
+  <div id="stats"></div>
+  <script type="module">
+    import * as THREE from '/vendor/three.module.js';
+    import { buildMap } from './map3d.js';
+    import { applyLook, sky, fog, lights } from './look3d.js';
+    import { createPost } from './post3d.js';
+
+    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(1);
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.info.autoReset = false;
+    document.body.prepend(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 500);
+    const presets = ['autumn', 'night', 'vhs', 'off'];
+    const effects = ['hit', 'coffee', 'smoke', 'slowmo', 'boom', 'death'];
+    let presetIndex = 0;
+    let post;
+    let last = performance.now(), frames = 0, total = 0, fps = 0;
+    const stats = document.getElementById('stats');
+    const choose = index => {
+      presetIndex = index;
+      post.setPreset(presets[index]);
+      fog(scene, presets[index]);
+      document.querySelectorAll('#presets button').forEach((button, i) => button.classList.toggle('active', i === index));
+    };
+    try {
+      const response = await fetch('/maps/rayon.json');
+      if (!response.ok) throw new Error(`Карта: HTTP ${response.status}`);
+      const map = await response.json();
+      scene.userData.map = map;
+      await buildMap(scene, map);
+      applyLook(scene);
+      sky(scene);
+      fog(scene, 'autumn');
+      lights(scene, 'autumn');
+      post = createPost(renderer, scene, camera, { outline: true });
+      const presetRow = document.getElementById('presets');
+      presets.forEach((name, i) => {
+        const button = document.createElement('button'); button.textContent = name;
+        button.addEventListener('click', () => choose(i)); presetRow.append(button);
+      });
+      const effectRow = document.getElementById('effects');
+      effects.forEach(name => {
+        const button = document.createElement('button'); button.textContent = name;
+        button.addEventListener('click', () => post.kick(name, 1)); effectRow.append(button);
+      });
+      choose(0);
+      addEventListener('keydown', event => {
+        if (event.code === 'KeyP') choose((presetIndex + 1) % presets.length);
+        if (event.code === 'F3') { event.preventDefault(); stats.style.display = stats.style.display === 'none' ? 'block' : 'none'; }
+      });
+      addEventListener('resize', () => {
+        renderer.setSize(innerWidth, innerHeight);
+        camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+        post.resize(innerWidth, innerHeight);
+      });
+      function frame(now) {
+        const dt = Math.min(0.1, (now - last) / 1000);
+        last = now;
+        const angle = now * 0.00008;
+        camera.position.set(Math.cos(angle) * 24, 21, Math.sin(angle) * 24);
+        camera.lookAt(0, 0, 0);
+        renderer.info.reset();
+        post.render(dt);
+        frames++; total += dt;
+        if (total >= 0.5) { fps = frames / total; frames = 0; total = 0; }
+        if (stats.style.display !== 'none') stats.textContent = `FPS: ${fps.toFixed(0)}\nПост GPU: ${post.timerAvailable && post.gpuMs !== null ? post.gpuMs.toFixed(2) + ' мс' : 'нет таймера'}\nDraw calls: ${renderer.info.render.calls}`;
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    } catch (error) { document.getElementById('error').textContent = error.message; console.error(error); }
+  </script>
+</body>
+</html>
