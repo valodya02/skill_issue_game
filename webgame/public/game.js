@@ -12,9 +12,15 @@ const bannerTextEl = document.getElementById('banner-text');
 const bannerSubEl = document.getElementById('banner-sub');
 
 const ARENA_HALF = 20;
+const SCENE_CONFIG = window.SCENE_CONFIG || {};
+const ENV = SCENE_CONFIG.environment || {};
+const RENDER = SCENE_CONFIG.render || {};
+const COIN_STYLE = SCENE_CONFIG.coin || {};
+
 const CONTROL_KEYS = new Set([
   'KeyW', 'KeyA', 'KeyS', 'KeyD',
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+  'ShiftLeft', 'ShiftRight',
 ]);
 
 const players = new Map();
@@ -31,36 +37,64 @@ let lastName = localStorage.getItem('arena-name') || 'Player';
 let yaw = 0;
 let pitch = 0;
 let lookInitialized = false;
+let lastScoresSignature = '';
+let lastTimerText = '';
 
 nameInput.value = lastName;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1020);
-scene.fog = new THREE.Fog(0x0b1020, 42, 85);
+const backgroundColor = ENV.background ?? 0x0b1020;
+scene.background = new THREE.Color(backgroundColor);
+
+if (ENV.fog !== false) {
+  const fog = ENV.fog || {};
+  scene.fog = new THREE.Fog(
+    fog.color ?? backgroundColor,
+    fog.near ?? 42,
+    fog.far ?? 85,
+  );
+}
 
 const camera = new THREE.PerspectiveCamera(
-  55,
+  ENV.cameraFov ?? 55,
   window.innerWidth / window.innerHeight,
   0.1,
   200,
 );
 camera.position.set(0, 22, 17);
 camera.rotation.order = 'YXZ';
+scene.add(camera);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: 'high-performance',
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, RENDER.maxPixelRatio ?? 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = RENDER.shadows !== false;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-const hemiLight = new THREE.HemisphereLight(0x9db8ff, 0x101828, 1.1);
+const lightsConfig = ENV.lights || {};
+const hemisphere = lightsConfig.hemisphere || {};
+const sun = lightsConfig.sun || {};
+
+const hemiLight = new THREE.HemisphereLight(
+  hemisphere.sky ?? 0x9db8ff,
+  hemisphere.ground ?? 0x101828,
+  hemisphere.intensity ?? 1.1,
+);
 scene.add(hemiLight);
 
-const sunLight = new THREE.DirectionalLight(0xffffff, 2.4);
-sunLight.position.set(14, 28, 10);
+const sunLight = new THREE.DirectionalLight(
+  sun.color ?? 0xffffff,
+  sun.intensity ?? 2.4,
+);
+const sunPosition = sun.position ?? [14, 28, 10];
+sunLight.position.set(...sunPosition);
 sunLight.castShadow = true;
-sunLight.shadow.mapSize.set(2048, 2048);
+const shadowMapSize = RENDER.shadowMapSize ?? 2048;
+sunLight.shadow.mapSize.set(shadowMapSize, shadowMapSize);
 sunLight.shadow.camera.left = -30;
 sunLight.shadow.camera.right = 30;
 sunLight.shadow.camera.top = 30;
@@ -69,41 +103,195 @@ sunLight.shadow.camera.near = 1;
 sunLight.shadow.camera.far = 90;
 scene.add(sunLight);
 
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(ARENA_HALF * 2, ARENA_HALF * 2),
-  new THREE.MeshStandardMaterial({ color: 0x131d36, roughness: 0.95, metalness: 0.05 }),
+if (ENV.blockyGround) {
+  const blockSize = ENV.blockSize ?? 2;
+  const cells = Math.max(1, Math.round((ARENA_HALF * 2) / blockSize));
+  const palette = (ENV.groundColors ?? [0x5f9f3d, 0x6cab47, 0x548f36])
+    .map((color) => new THREE.Color(color));
+  const ground = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(blockSize, 1, blockSize),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0 }),
+    cells * cells,
+  );
+  ground.receiveShadow = true;
+
+  const dummy = new THREE.Object3D();
+  let index = 0;
+  for (let ix = 0; ix < cells; ix++) {
+    for (let iz = 0; iz < cells; iz++) {
+      dummy.position.set(
+        -ARENA_HALF + blockSize / 2 + ix * blockSize,
+        -0.5,
+        -ARENA_HALF + blockSize / 2 + iz * blockSize,
+      );
+      dummy.updateMatrix();
+      ground.setMatrixAt(index, dummy.matrix);
+      ground.setColorAt(
+        index,
+        palette[(ix * 7 + iz * 13 + ix * iz) % palette.length],
+      );
+      index++;
+    }
+  }
+  ground.instanceMatrix.needsUpdate = true;
+  if (ground.instanceColor) ground.instanceColor.needsUpdate = true;
+  ground.computeBoundingSphere();
+  ground.matrixAutoUpdate = false;
+  scene.add(ground);
+} else {
+  const floorConfig = ENV.floor || {};
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(ARENA_HALF * 2, ARENA_HALF * 2),
+    new THREE.MeshStandardMaterial({
+      color: floorConfig.color ?? 0x5f9f3d,
+      roughness: floorConfig.roughness ?? 1,
+      metalness: floorConfig.metalness ?? 0,
+    }),
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  floor.updateMatrix();
+  floor.matrixAutoUpdate = false;
+  scene.add(floor);
+}
+
+if (ENV.grid !== false) {
+  const gridConfig = typeof ENV.grid === 'object' ? ENV.grid : {};
+  const grid = new THREE.GridHelper(
+    ARENA_HALF * 2,
+    gridConfig.divisions ?? ARENA_HALF * 2,
+    gridConfig.color ?? 0x33507f,
+    gridConfig.color2 ?? 0x1b2a4a,
+  );
+  grid.position.y = 0.01;
+  grid.updateMatrix();
+  grid.matrixAutoUpdate = false;
+  scene.add(grid);
+}
+
+if (ENV.walls !== false) {
+  const wallsConfig = typeof ENV.walls === 'object' ? ENV.walls : {};
+  const wallHeight = wallsConfig.height ?? 1.4;
+  const wallMaterial = new THREE.MeshStandardMaterial({
+    color: wallsConfig.color ?? 0x2b3b63,
+    transparent: true,
+    opacity: wallsConfig.opacity ?? 0.45,
+    roughness: 0.7,
+  });
+  const wallDefinitions = [
+    [ARENA_HALF * 2, 0.4, 0, ARENA_HALF],
+    [ARENA_HALF * 2, 0.4, 0, -ARENA_HALF],
+    [0.4, ARENA_HALF * 2, ARENA_HALF, 0],
+    [0.4, ARENA_HALF * 2, -ARENA_HALF, 0],
+  ];
+  for (const [sizeX, sizeZ, x, z] of wallDefinitions) {
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(sizeX, wallHeight, sizeZ),
+      wallMaterial,
+    );
+    wall.position.set(x, wallHeight / 2, z);
+    wall.updateMatrix();
+    wall.matrixAutoUpdate = false;
+    scene.add(wall);
+  }
+}
+
+const decorationGeometries = {
+  box: new THREE.BoxGeometry(1, 1, 1),
+  sphere: new THREE.SphereGeometry(0.5, 24, 16),
+  cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 24),
+  cone: new THREE.ConeGeometry(0.5, 1, 24),
+};
+
+for (const item of SCENE_CONFIG.decorations ?? []) {
+  const geometry = decorationGeometries[item.type ?? 'box'];
+  if (!geometry) continue;
+
+  const opacity = item.opacity ?? 1;
+  const decoration = new THREE.Mesh(
+    geometry,
+    new THREE.MeshStandardMaterial({
+      color: item.color ?? 0x4cc9f0,
+      roughness: item.roughness ?? 0.6,
+      metalness: item.metalness ?? 0.1,
+      transparent: opacity < 1,
+      opacity,
+    }),
+  );
+  const [x = 0, y = 0, z = 0] = item.position ?? [];
+  const [sizeX = 1, sizeY = 1, sizeZ = 1] = item.size ?? [];
+  const [rotationX = 0, rotationY = 0, rotationZ = 0] = item.rotation ?? [];
+  decoration.position.set(x, y, z);
+  decoration.scale.set(sizeX, sizeY, sizeZ);
+  decoration.rotation.set(rotationX, rotationY, rotationZ);
+  decoration.castShadow = true;
+  decoration.receiveShadow = true;
+  decoration.updateMatrix();
+  decoration.matrixAutoUpdate = false;
+  scene.add(decoration);
+}
+
+
+const trunkColor = new THREE.Color(0x6b4a2b);
+const leafColors = [0x3f7d2a, 0x4b8f32, 0x357022].map(
+  (color) => new THREE.Color(color),
 );
-floor.rotation.x = -Math.PI / 2;
-floor.receiveShadow = true;
-scene.add(floor);
+const treeBlocks = [];
 
-const grid = new THREE.GridHelper(ARENA_HALF * 2, ARENA_HALF * 2, 0x33507f, 0x1b2a4a);
-grid.position.y = 0.01;
-scene.add(grid);
+for (const tree of ENV.trees ?? []) {
+  const treeX = Array.isArray(tree) ? tree[0] : tree.position?.[0] ?? 0;
+  const treeZ = Array.isArray(tree) ? tree[1] : tree.position?.[1] ?? 0;
+  const trunkHeight = (Array.isArray(tree) ? tree[2] : tree.trunkHeight) ?? 4;
 
-const wallMaterial = new THREE.MeshStandardMaterial({
-  color: 0x2b3b63,
-  transparent: true,
-  opacity: 0.45,
-  roughness: 0.7,
-});
-const wallDefinitions = [
-  [ARENA_HALF * 2, 0.4, 0, ARENA_HALF],
-  [ARENA_HALF * 2, 0.4, 0, -ARENA_HALF],
-  [0.4, ARENA_HALF * 2, ARENA_HALF, 0],
-  [0.4, ARENA_HALF * 2, -ARENA_HALF, 0],
-];
-for (const [sizeX, sizeZ, x, z] of wallDefinitions) {
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, 1.4, sizeZ), wallMaterial);
-  wall.position.set(x, 0.7, z);
-  scene.add(wall);
+  for (let level = 0; level < trunkHeight; level++) {
+    treeBlocks.push({ x: treeX, y: level + 0.5, z: treeZ, color: trunkColor });
+  }
+
+  for (let layer = 0; layer < 4; layer++) {
+    const radius = layer < 2 ? 2 : layer === 2 ? 1 : 0;
+    const centerY = trunkHeight + layer + 0.5;
+    for (let dx = -radius; dx <= radius; dx++) {
+      for (let dz = -radius; dz <= radius; dz++) {
+        if (radius === 2 && Math.abs(dx) === 2 && Math.abs(dz) === 2) continue;
+        treeBlocks.push({
+          x: treeX + dx,
+          y: centerY,
+          z: treeZ + dz,
+          color: leafColors[(dx + dz + layer + 9) % leafColors.length],
+        });
+      }
+    }
+  }
+}
+
+if (treeBlocks.length > 0) {
+  const forest = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }),
+    treeBlocks.length,
+  );
+  forest.castShadow = true;
+  forest.receiveShadow = true;
+
+  const dummy = new THREE.Object3D();
+  treeBlocks.forEach((block, index) => {
+    dummy.position.set(block.x, block.y, block.z);
+    dummy.updateMatrix();
+    forest.setMatrixAt(index, dummy.matrix);
+    forest.setColorAt(index, block.color);
+  });
+  forest.instanceMatrix.needsUpdate = true;
+  forest.instanceColor.needsUpdate = true;
+  forest.computeBoundingSphere();
+  forest.matrixAutoUpdate = false;
+  scene.add(forest);
 }
 
 const coin = new THREE.Mesh(
-  new THREE.TorusGeometry(0.55, 0.18, 12, 28),
+  new THREE.TorusGeometry(COIN_STYLE.radius ?? 0.55, COIN_STYLE.tube ?? 0.18, 12, 28),
   new THREE.MeshStandardMaterial({
-    color: 0xffc107,
-    emissive: 0xff9800,
+    color: COIN_STYLE.color ?? 0xffc107,
+    emissive: COIN_STYLE.emissive ?? 0xff9800,
     emissiveIntensity: 0.7,
     metalness: 0.65,
     roughness: 0.25,
@@ -113,9 +301,41 @@ coin.position.copy(coinTarget);
 coin.castShadow = true;
 scene.add(coin);
 
-const coinLight = new THREE.PointLight(0xffc107, 12, 10, 2);
+const coinLight = new THREE.PointLight(COIN_STYLE.color ?? 0xffc107, 12, 10, 2);
 coinLight.position.set(0, 1.6, 0);
 scene.add(coinLight);
+
+
+const weapon = new THREE.Group();
+const weaponBasePosition = new THREE.Vector3(0.34, -0.33, -1.0);
+weapon.position.copy(weaponBasePosition);
+weapon.rotation.set(0.02, -0.08, -0.03);
+weapon.visible = false;
+
+const weaponMaterials = {
+  body: new THREE.MeshStandardMaterial({ color: 0x4d5a32, roughness: 0.75, metalness: 0.25 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x2c3322, roughness: 0.85 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x44484a, roughness: 0.5, metalness: 0.6 }),
+  skin: new THREE.MeshStandardMaterial({ color: 0xd8a06a, roughness: 0.9 }),
+};
+
+function addWeaponPart(geometry, material, x, y, z, rotationX = 0) {
+  const part = new THREE.Mesh(geometry, material);
+  part.position.set(x, y, z);
+  part.rotation.x = rotationX;
+  weapon.add(part);
+  return part;
+}
+
+addWeaponPart(new THREE.CylinderGeometry(0.08, 0.1, 1.25, 10), weaponMaterials.body, 0, 0, -0.35, Math.PI / 2);
+addWeaponPart(new THREE.CylinderGeometry(0.13, 0.11, 0.22, 10), weaponMaterials.metal, 0, 0, -1.02, Math.PI / 2);
+addWeaponPart(new THREE.BoxGeometry(0.08, 0.3, 0.1), weaponMaterials.dark, 0, -0.27, -0.2);
+addWeaponPart(new THREE.BoxGeometry(0.1, 0.1, 0.25), weaponMaterials.dark, 0, -0.18, 0.08);
+addWeaponPart(new THREE.BoxGeometry(0.04, 0.16, 0.04), weaponMaterials.metal, 0, 0.14, -0.4);
+addWeaponPart(new THREE.BoxGeometry(0.15, 0.14, 0.18), weaponMaterials.skin, 0.01, -0.26, 0.03);
+addWeaponPart(new THREE.BoxGeometry(0.15, 0.13, 0.18), weaponMaterials.skin, -0.02, -0.2, -0.62);
+
+camera.add(weapon);
 
 const playerGeometry = new THREE.BoxGeometry(1.2, 1.2, 1.2);
 
@@ -128,7 +348,7 @@ function createPlayerMesh(data) {
     metalness: 0.2,
   });
   const mesh = new THREE.Mesh(playerGeometry, material);
-  mesh.position.set(data.x, 0.6, data.z);
+  mesh.position.set(data.x, 0.6 + (data.y ?? 0), data.z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   scene.add(mesh);
@@ -138,7 +358,7 @@ function createPlayerMesh(data) {
   return {
     mesh,
     material,
-    target: new THREE.Vector3(data.x, 0.6, data.z),
+    target: new THREE.Vector3(data.x, 0.6 + (data.y ?? 0), data.z),
     data,
   };
 }
@@ -188,6 +408,8 @@ function connect(name) {
     if (message.type === 'welcome') {
       myId = message.id;
       joined = true;
+      lastScoresSignature = '';
+      lastTimerText = '';
       localStorage.setItem('arena-name', lastName);
       introEl.classList.add('hidden');
       hudEl.classList.remove('hidden');
@@ -202,6 +424,8 @@ function connect(name) {
     myId = null;
     phase = 'playing';
     lookInitialized = false;
+    lastScoresSignature = '';
+    lastTimerText = '';
     clearPlayers();
     hudEl.classList.add('hidden');
     bannerEl.classList.add('hidden');
@@ -228,7 +452,7 @@ function applyState(state) {
       players.set(data.id, entry);
     }
     entry.data = data;
-    entry.target.set(data.x, 0.6, data.z);
+    entry.target.set(data.x, 0.6 + (data.y ?? 0), data.z);
 
     if (data.id === myId && !lookInitialized) {
       yaw = Math.atan2(data.x, data.z);
@@ -241,7 +465,11 @@ function applyState(state) {
     if (!alive.has(id)) removePlayer(id);
   }
 
-  timerEl.textContent = Math.ceil(state.timeLeft);
+  const timerText = String(Math.ceil(state.timeLeft));
+  if (timerText !== lastTimerText) {
+    lastTimerText = timerText;
+    timerEl.textContent = timerText;
+  }
   renderScores(state.players);
 
   if (phase === 'ended') {
@@ -258,6 +486,12 @@ function applyState(state) {
 
 function renderScores(list) {
   const sorted = [...list].sort((a, b) => b.score - a.score);
+  const signature = sorted
+    .map((player) => `${player.id}|${player.name}|${player.color}|${player.score}`)
+    .join(';');
+  if (signature === lastScoresSignature) return;
+  lastScoresSignature = signature;
+
   const rows = sorted.map((player) => {
     const name = escapeHtml(player.name);
     const mine = player.id === myId ? ' me' : '';
@@ -323,6 +557,13 @@ document.addEventListener('mousemove', (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    event.preventDefault();
+    if (!event.repeat && joined && ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'jump' }));
+    }
+    return;
+  }
   if (CONTROL_KEYS.has(event.code)) {
     keys.add(event.code);
     event.preventDefault();
@@ -344,10 +585,12 @@ window.addEventListener('resize', () => {
 setInterval(() => {
   if (!joined || !ws || ws.readyState !== WebSocket.OPEN) return;
   const input = readInput();
-  ws.send(JSON.stringify({ type: 'input', x: input.x, z: input.z }));
+  const sprint = keys.has('ShiftLeft') || keys.has('ShiftRight');
+  ws.send(JSON.stringify({ type: 'input', x: input.x, z: input.z, sprint }));
 }, 50);
 
 const clock = new THREE.Clock();
+let weaponBob = 0;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -376,12 +619,22 @@ function animate() {
     camera.rotation.x = pitch;
     camera.rotation.y = yaw;
     camera.rotation.z = 0;
+
+    const running = keys.has('KeyW') || keys.has('KeyA')
+      || keys.has('KeyS') || keys.has('KeyD')
+      || keys.has('ArrowUp') || keys.has('ArrowDown')
+      || keys.has('ArrowLeft') || keys.has('ArrowRight');
+    weaponBob += dt * (running && (me.data?.y ?? 0) < 0.01 ? 11 : 2);
+    weapon.position.x = weaponBasePosition.x + Math.cos(weaponBob * 1.7) * 0.009;
+    weapon.position.y = weaponBasePosition.y + Math.sin(weaponBob * 3.4) * 0.007;
   } else {
     cameraTarget.set(0, 0, 0);
     desiredCamera.set(0, 22, 17);
     camera.position.lerp(desiredCamera, 1 - Math.exp(-5 * dt));
     camera.lookAt(cameraTarget.x, 0, cameraTarget.z);
   }
+
+  weapon.visible = Boolean(me);
 
   renderer.render(scene, camera);
 }

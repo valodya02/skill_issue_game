@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const { WebSocketServer } = require('ws');
 
 const PORT = Number(process.env.PORT) || 3000;
@@ -9,6 +10,9 @@ const THREE_BUILD_DIR = path.join(__dirname, 'node_modules', 'three', 'build');
 
 const ARENA_HALF = 20;
 const PLAYER_SPEED = 9;
+const SPRINT_MULTIPLIER = 1.45;
+const GRAVITY = 26;
+const JUMP_SPEED = 8.5;
 const COIN_RADIUS = 1.2;
 const ROUND_SECONDS = Number(process.env.ROUND_SECONDS) || 60;
 const RESET_DELAY_SECONDS = 5;
@@ -23,6 +27,9 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
 };
+
+const COMPRESSIBLE_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.svg']);
+const fileCache = new Map();
 
 const COLORS = [
   '#4cc9f0', '#f72585', '#ffd166', '#06d6a0', '#b388ff',
@@ -50,9 +57,11 @@ const httpServer = http.createServer((req, res) => {
       return send(res, 403, 'Forbidden');
     }
     return sendFile(
+      req,
       res,
       filePath,
       MIME_TYPES[path.extname(filePath)] || 'application/javascript; charset=utf-8',
+      { immutable: true },
     );
   }
 
@@ -61,7 +70,7 @@ const httpServer = http.createServer((req, res) => {
   if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + path.sep)) {
     return send(res, 403, 'Forbidden');
   }
-  sendFile(res, filePath, MIME_TYPES[path.extname(filePath)] || 'application/octet-stream');
+  sendFile(req, res, filePath, MIME_TYPES[path.extname(filePath)] || 'application/octet-stream');
 });
 
 function send(res, status, body, type = 'text/plain; charset=utf-8') {
@@ -69,12 +78,67 @@ function send(res, status, body, type = 'text/plain; charset=utf-8') {
   res.end(body);
 }
 
-function sendFile(res, filePath, type) {
-  fs.readFile(filePath, (err, data) => {
-    if (err) return send(res, 404, 'Not found');
-    res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
-    res.end(data);
+function sendFile(req, res, filePath, type, options = {}) {
+  fs.stat(filePath, (err, stat) => {
+    if (err || !stat.isFile()) return send(res, 404, 'Not found');
+
+    const etag = `W/"${stat.size.toString(16)}-${stat.mtimeMs.toString(16)}"`;
+    const extension = path.extname(filePath);
+    const acceptsGzip = COMPRESSIBLE_EXTENSIONS.has(extension)
+      && /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+    const headers = {
+      'Content-Type': type,
+      'Cache-Control': options.immutable
+        ? 'public, max-age=31536000, immutable'
+        : 'no-cache',
+      ETag: etag,
+      Vary: 'Accept-Encoding',
+    };
+
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, headers);
+      return res.end();
+    }
+
+    let cached = fileCache.get(filePath);
+    if (!cached || cached.mtimeMs !== stat.mtimeMs || cached.size !== stat.size) {
+      try {
+        cached = {
+          mtimeMs: stat.mtimeMs,
+          size: stat.size,
+          data: fs.readFileSync(filePath),
+          gzip: null,
+        };
+      } catch {
+        return send(res, 404, 'Not found');
+      }
+      fileCache.set(filePath, cached);
+    }
+
+    if (!acceptsGzip) {
+      headers['Content-Length'] = cached.data.length;
+      res.writeHead(200, headers);
+      return res.end(cached.data);
+    }
+
+    if (cached.gzip) return sendBuffer(res, headers, cached.gzip);
+    zlib.gzip(cached.data, (error, compressed) => {
+      if (error) {
+        headers['Content-Length'] = cached.data.length;
+        res.writeHead(200, headers);
+        return res.end(cached.data);
+      }
+      cached.gzip = compressed;
+      sendBuffer(res, headers, compressed);
+    });
   });
+}
+
+function sendBuffer(res, headers, body) {
+  headers['Content-Encoding'] = 'gzip';
+  headers['Content-Length'] = body.length;
+  res.writeHead(200, headers);
+  res.end(body);
 }
 
 function randomBetween(min, max) {
@@ -133,8 +197,12 @@ function createPlayer(name) {
     color: COLORS[(nextId - 2) % COLORS.length],
     x: spawn.x,
     z: spawn.z,
+    y: 0,
     ix: 0,
     iz: 0,
+    vy: 0,
+    grounded: true,
+    sprint: false,
     score: 0,
   };
   return player;
@@ -146,8 +214,12 @@ function resetRound() {
     const spawn = spawnPosition();
     player.x = spawn.x;
     player.z = spawn.z;
+    player.y = 0;
     player.ix = 0;
     player.iz = 0;
+    player.vy = 0;
+    player.grounded = true;
+    player.sprint = false;
     player.score = 0;
   }
 }
@@ -178,9 +250,19 @@ function step(dt) {
       const length = Math.hypot(player.ix, player.iz);
       const nx = length > 1 ? player.ix / length : player.ix;
       const nz = length > 1 ? player.iz / length : player.iz;
+      const speed = PLAYER_SPEED * (player.sprint ? SPRINT_MULTIPLIER : 1);
 
-      player.x = clamp(player.x + nx * PLAYER_SPEED * dt, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
-      player.z = clamp(player.z + nz * PLAYER_SPEED * dt, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
+      player.x = clamp(player.x + nx * speed * dt, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
+      player.z = clamp(player.z + nz * speed * dt, -ARENA_HALF + 0.5, ARENA_HALF - 0.5);
+
+      player.vy -= GRAVITY * dt;
+      player.y = Math.max(0, player.y + player.vy * dt);
+      if (player.y === 0) {
+        player.vy = 0;
+        player.grounded = true;
+      } else {
+        player.grounded = false;
+      }
 
       const dx = player.x - round.coin.x;
       const dz = player.z - round.coin.z;
@@ -210,16 +292,19 @@ function snapshot() {
       name: player.name,
       color: player.color,
       x: roundTo(player.x),
+      y: roundTo(player.y),
       z: roundTo(player.z),
       score: player.score,
     })),
   });
 }
 
-const wss = new WebSocketServer({ server: httpServer });
+const wss = new WebSocketServer({ server: httpServer, maxPayload: 4096 });
 
 wss.on('connection', (ws) => {
   let player = null;
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
 
   ws.on('message', (raw) => {
     let message;
@@ -252,6 +337,14 @@ wss.on('connection', (ws) => {
         player.ix = clamp(x, -1, 1);
         player.iz = clamp(z, -1, 1);
       }
+      player.sprint = Boolean(message.sprint);
+    }
+
+    if (message.type === 'jump' && player) {
+      if (round.phase === 'playing' && player.grounded) {
+        player.vy = JUMP_SPEED;
+        player.grounded = false;
+      }
     }
   });
 
@@ -276,6 +369,17 @@ setInterval(() => {
     }
   }
 }, TICK_MS);
+
+setInterval(() => {
+  for (const client of wss.clients) {
+    if (!client.isAlive) {
+      client.terminate();
+      continue;
+    }
+    client.isAlive = false;
+    client.ping();
+  }
+}, 30000);
 
 httpServer.listen(PORT, () => {
   console.log(`Skill Issue Arena: http://localhost:${PORT}`);
