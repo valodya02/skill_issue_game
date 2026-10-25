@@ -47,8 +47,7 @@ const grid = $('chars');
 for (const [id, c] of Object.entries(CHARS)) {
   const b = document.createElement('button');
   b.className = 'ch'; b.dataset.id = id;
-  b.innerHTML = `<b>${c.emoji}</b>${c.name}<br><small>${c.role} · ${c.hp} хп</small><br>` +
-    `<small>Q ${c.skills.q.label} · E ${c.skills.e.label} · R ${c.skills.r.label}</small>`;
+  b.innerHTML = `<b>${c.emoji}</b>${c.name}<br><small>${c.role} · ${c.hp} хп</small>`;
   b.onclick = () => sock.emit('pick', id);
   grid.appendChild(b);
 }
@@ -250,13 +249,13 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyB' && ['buy', 'playing'].includes(S.phase)) toggleShop();
   if (S.phase !== 'playing') return;
   const w = toWorld(mouse.x, mouse.y);
-  if (e.code === 'KeyQ') sock.emit('cast', { slot: 'q', ...w });
+  if (e.code === 'KeyQ' && meta.skills) sock.emit('cast', { slot: 'q', ...w });
   if (e.code === 'KeyE' && !e.repeat) {
     const me = S.players.find((p) => p.id === meta.you);
     if (me?.turret || (gameMap?.turrets || []).some((v) => !S.turrets?.find((s) => s.id === v.id)?.by && Math.hypot(me.x - v.x, me.y - v.y) <= 50)) sock.emit('turret');
-    else sock.emit('cast', { slot: 'e', ...w });
+    else if (meta.skills) sock.emit('cast', { slot: 'e', ...w });
   }
-  if (e.code === 'KeyR') sock.emit('cast', { slot: 'r', ...w });
+  if (e.code === 'KeyR' && meta.skills) sock.emit('cast', { slot: 'r', ...w });
   if (e.code === 'KeyF') sock.emit('pickup');
   if (e.code === 'KeyG' && !e.repeat) sock.emit('terminal');
   if (e.code === 'Digit4' && !e.repeat) sock.emit('grenade', w);
@@ -430,7 +429,7 @@ function frame() {
     ctx.fillStyle = '#fff'; ctx.font = '16px system-ui';
     ctx.fillText(`${me.weapon.emoji} ${me.weapon.name}`, 16, y - 26);
     if (me.grenade) ctx.fillText(`4 ${SHOP[me.grenade].emoji} ${SHOP[me.grenade].name}`, 16, y - 50);
-    ['q', 'e', 'r'].forEach((k, i) => {
+    if (meta.skills) ['q', 'e', 'r'].forEach((k, i) => {
       const x = innerWidth / 2 - 165 + i * 115, s = c.skills[k], left = me.cd[k] || 0;
       ctx.fillStyle = left ? '#2b2340' : '#3d2f63'; ctx.fillRect(x, y - 24, 105, 44);
       if (left) { ctx.fillStyle = '#0009'; ctx.fillRect(x, y - 24, 105 * Math.min(1, left / s.cd), 44); }

@@ -168,9 +168,20 @@ function aoeHit(room, src, x, y, r, dmg, fx) {
 }
 
 // --- скиллы ---
+// Режим КС: только оружие, гранаты, бомба. Скиллы персонажей Q/E/R включаются SKILLS=1
+const SKILLS = process.env.SKILLS === '1';
+// Пули огнестрела летят почти как хитскан, метательное остаётся видимым
+const FAST = new Set(['pistol', 'tapok', 'makaroni', 'baguette', 'turret_mg']);
+// Разброс как в КС, радианы: стоишь точно, бежишь и прыгаешь мажешь. Клиент рисует прицел по этому же числу
+function inaccuracy(p) {
+  const run = Math.min(1, Math.hypot(p.vx || 0, p.vy || 0) / 250);
+  return 0.004 + run * 0.06 + ((p.z || 0) > 2 ? 0.14 : 0) + (p.recoil || 0);
+}
+
 function cast(room, p, slot, tx, ty, skillOverride) {
   const c = CHARS[p.char];
   if (slot === 'a' && !skillOverride) return fire(room, p, tx, ty);
+  if (!SKILLS && !skillOverride) return;
   const s = skillOverride || c.skills[slot];
   if (!skillOverride) {
     if (!p.alive || has(p, 'stun') || p.cd[slot] > now()) return;
@@ -305,13 +316,15 @@ function fire(room, p, tx, ty) {
     emitFx(room, { k: 'shot', x: p.x, y: p.y });
     return;
   }
-  const n = w.count || 1;
+  const n = w.count || 1, fast = !!turret || FAST.has(w.id), speed = fast ? Math.max(2600, w.speed * 3) : w.speed;
+  const spread = fast && !turret ? inaccuracy(p) : 0;
+  if (fast) p.recoil = Math.min(0.08, (p.recoil || 0) + (w.rate < 200 ? 0.015 : 0.03));
   for (let i = 0; i < n; i++) {
-    const jitter = has(p, 'jitter') ? (Math.random() * 2 - 1) * 20 * Math.PI / 180 : 0;
+    const jitter = (has(p, 'jitter') ? (Math.random() * 2 - 1) * 20 * Math.PI / 180 : 0) + (Math.random() * 2 - 1) * spread;
     const a = (n > 1 ? ang - w.spread / 2 + (w.spread * i) / (n - 1) : ang) + jitter;
     room.shots.push({
       id: uid++, owner: p.id, team: p.team, x: p.x, y: p.y,
-      vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, r: w.r, left: w.range, dmg: w.dmg, fx: w.fx, emoji: w.emoji,
+      vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, r: w.r, fast, left: w.range, dmg: w.dmg, fx: w.fx, emoji: w.emoji,
       pierce: w.pierce || 0, bounce: w.bounce || 0, ignite: w.ignite, hit: new Set(),
     });
   }
@@ -497,6 +510,7 @@ function step(room, dt) {
     if (m) { mx /= m; my /= m; }
     if (p.turret) { mx = 0; my = 0; p.vx = 0; p.vy = 0; p.input.j = 0; }
     const moveFx = movePlayer(p, dt, mx, my, sp, map, fieldW, fieldH, PR, t);
+    if (p.recoil) p.recoil = Math.max(0, p.recoil - dt * 0.12);
     if (moveFx.jumped) emitFx(room, { k: moveFx.hopped ? 'hop' : 'jump', x: p.x, y: p.y });
     if (moveFx.landed) emitFx(room, { k: 'land', x: p.x, y: p.y });
     if (p.hold && Math.hypot(p.x - p.hold.x, p.y - p.hold.y) > 2) cancelCode(room, p);
@@ -540,7 +554,7 @@ function step(room, dt) {
     }
     for (const w of room.walls) if (Math.hypot(s.x - w.x, s.y - w.y) < s.r + w.r) return false;
     for (const o of room.players.values()) {
-      if (o.alive && o.team !== s.team && !(s.hit && s.hit.has(o.id)) && Math.hypot(o.x - s.x, o.y - s.y) < PR + s.r) {
+      if (o.alive && o.team !== s.team && !(s.hit && s.hit.has(o.id)) && segDist(o, x0, y0, s.x, s.y) < PR + s.r) {
         if (has(o, 'deflect')) { deflectShot(s, o); return true; }
         damage(room, room.players.get(s.owner), o, s.dmg, s.fx);
         if (s.hook && o.alive) o.pull = { by: s.owner, until: t + 250 };
@@ -551,7 +565,7 @@ function step(room, dt) {
       }
     }
     if (s.team >= 0) for (const n of room.npcs) {
-      if (n.alive && !(s.hit && s.hit.has(n.id)) && Math.hypot(n.x - s.x, n.y - s.y) < 24 + s.r) {
+      if (n.alive && !(s.hit && s.hit.has(n.id)) && segDist(n, x0, y0, s.x, s.y) < 24 + s.r) {
         const src = room.players.get(s.owner);
         if (src) damageNpc(room, src, n, s.dmg);
         if (s.hit) s.hit.add(n.id);
@@ -629,11 +643,11 @@ function snapshot(room) {
       id: p.id, name: p.name, team: p.team, char: p.char, ready: p.ready, bot: p.bot,
       x: Math.round(p.x), y: Math.round(p.y), hp: Math.round(p.hp), alive: p.alive, ang: +p.ang.toFixed(2), kills: p.kills,
       money: p.money, tokens: p.tokens, forging: !!p.forging, weapon: p.weapon,
-      z: Math.round(p.z), hop: p.hop || 0, grenade: p.grenade, grenades: p.grenades, turret: p.turret,
+      z: Math.round(p.z), hop: p.hop || 0, spr: +inaccuracy(p).toFixed(3), grenade: p.grenade, grenades: p.grenades, turret: p.turret,
       cd: Object.fromEntries(Object.entries(p.cd).map(([k, v]) => [k, Math.max(0, v - t)])),
       st: Object.fromEntries(Object.entries(p.st).filter(([, v]) => v > t).map(([k, v]) => [k, v - t])),
     })),
-    shots: room.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), r: s.r, team: s.team, emoji: s.emoji })),
+    shots: room.shots.map((s) => ({ x: Math.round(s.x), y: Math.round(s.y), r: s.r, team: s.team, emoji: s.emoji, a: +Math.atan2(s.vy, s.vx).toFixed(2), f: s.fast ? 1 : 0 })),
     pending: room.pending.map((b) => ({ x: Math.round(b.x), y: Math.round(b.y), r: b.r, left: b.at - t })),
     zones: room.zones.map((z) => ({ x: Math.round(z.x), y: Math.round(z.y), r: z.r, kind: z.kind, team: z.team, emoji: z.emoji })),
     walls: room.walls.map((w) => ({ x: Math.round(w.x), y: Math.round(w.y), r: w.r })),
@@ -674,7 +688,7 @@ io.on('connection', (sock) => {
     room = r;
     sock.join(code);
     addPlayer(room, sock.id, name);
-    sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id });
+    sock.emit('meta', { you: sock.id, W: fieldW, H: fieldH, code, mode: room.mode, map: map.id, skills: SKILLS });
   });
   sock.on('pick', (cid) => { const p = me(); if (p && CHARS[cid] && room.phase === 'lobby') { p.char = cid; tryStart(room); } });
   sock.on('ready', () => { const p = me(); if (p && p.char) { p.ready = !p.ready; tryStart(room); } });
@@ -783,4 +797,4 @@ io.on('connection', (sock) => {
 });
 
 if (require.main === module) server.listen(PORT, () => console.log(`brainrot battle: http://localhost:${PORT}`));
-module.exports = { step, snapshot, getRoom, addPlayer, cast, codeInput, startCode, map, PR };
+module.exports = { SKILLS, step, snapshot, getRoom, addPlayer, cast, codeInput, startCode, map, PR };

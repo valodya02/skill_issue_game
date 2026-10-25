@@ -4,6 +4,7 @@ import * as THREE from '/vendor/three.module.js';
 import { buildMap } from './map3d.js';
 import { applyLook, toonMaterial, sky, fog, lights } from './look3d.js';
 import { createPost } from './post3d.js';
+import { buildWeapon } from './parts3d.js';
 
 const SCALE = 40;
 const wx = (x) => x / SCALE - 20;
@@ -136,6 +137,9 @@ function instanced(geo, material, n) {
 }
 const shots = instanced(G.sphere, new THREE.MeshBasicMaterial({ color: '#ffffff' }), 256);
 shots.setColorAt(0, new THREE.Color());
+// Пули огнестрела: тонкий светящийся трассер вдоль полёта, а не шарик
+const tracers = instanced(G.box, new THREE.MeshBasicMaterial({ color: '#ffe9a8', transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), 256);
+const TRACER = 2.2;
 const zones = Object.fromEntries(Object.entries(MAT.zone).map(([k, m]) => [k, instanced(k === 'smoke' ? G.sphere : G.disc, m, 32)]));
 const pendings = instanced(G.disc, MAT.pending, 32);
 const walls = instanced(G.cyl, MAT.wall, 32);
@@ -189,21 +193,57 @@ const PITCH = THREE.MathUtils.degToRad(72);       // круче, чтобы па
 // ---------- вид от первого лица: V переключает, клик захватывает мышь ----------
 let fpView = params.get('view') !== 'top';
 let yaw = 0, pitch = 0, yawSet = false;
+// Прицел как в КС: четыре черты расходятся по разбросу сервера (бег, прыжок, отдача)
 const cross = document.createElement('div');
-cross.style.cssText = 'position:fixed;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;z-index:3;pointer-events:none;display:none;' +
-  'background:linear-gradient(#fff,#fff) center/2px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 2px no-repeat;filter:drop-shadow(0 0 2px #000)';
+cross.style.cssText = 'position:fixed;left:50%;top:50%;width:0;height:0;z-index:3;pointer-events:none;display:none';
+const ticks = [[0, -1], [0, 1], [-1, 0], [1, 0]].map(([dx, dy]) => {
+  const t = document.createElement('div');
+  t.style.cssText = `position:absolute;background:#7dff8a;box-shadow:0 0 0 1px #000a;${dx ? 'width:8px;height:2px;top:-1px' : 'width:2px;height:8px;left:-1px'}`;
+  t.dx = dx; t.dy = dy; cross.append(t);
+  return t;
+});
+const dot = document.createElement('div');
+dot.style.cssText = 'position:absolute;left:-1px;top:-1px;width:2px;height:2px;background:#7dff8a;box-shadow:0 0 0 1px #000a';
+cross.append(dot);
 document.body.append(cross);
+let gap = 4;
+function setGap(px) {
+  gap += (px - gap) * 0.35;
+  for (const t of ticks) {
+    if (t.dx) t.style.left = (t.dx < 0 ? -gap - 8 : gap) + 'px';
+    else t.style.top = (t.dy < 0 ? -gap - 8 : gap) + 'px';
+  }
+}
 const hint = document.createElement('div');
 hint.textContent = 'клик: захват мыши · V: вид сверху / от первого лица · Esc: отпустить';
 hint.style.cssText = 'position:fixed;left:50%;top:58%;transform:translateX(-50%);z-index:3;pointer-events:none;color:#fff;font:600 14px system-ui;text-shadow:0 1px 3px #000;display:none';
 document.body.append(hint);
-const viewGun = new THREE.Group();                  // пушка в руке, висит на камере
-viewGun.add(mesh(G.box, MAT.dark, 0.09, 0.11, 0.55, 0, 0, 0));
-viewGun.add(mesh(G.box, MAT.dark, 0.07, 0.16, 0.08, 0, -0.1, 0.12));
-viewGun.scale.setScalar(0.45);
+const viewGun = new THREE.Group();                  // пушка в руке по model.parts текущего оружия, висит на камере
+viewGun.scale.setScalar(0.3);
 viewGun.position.set(0.2, -0.17, -0.42);
 viewGun.visible = false;
 camera.add(viewGun);
+const hand = mesh(G.box, MAT.skin, 0.12, 0.14, 0.18, 0, -0.14, 0.22);  // кисть под рукоятью
+let gunFor = null;
+function setViewGun(w) {
+  const key = w ? w.name + (w.model?.parts?.length || 0) : '';
+  if (key === gunFor) return;
+  gunFor = key;
+  viewGun.clear();
+  const parts = w?.model?.parts?.length ? buildWeapon(w.model) : null;
+  if (parts) viewGun.add(parts);
+  else { viewGun.add(mesh(G.box, MAT.dark, 0.09, 0.11, 0.55, 0, 0, 0)); viewGun.add(mesh(G.box, MAT.dark, 0.07, 0.16, 0.08, 0, -0.1, 0.12)); }
+  viewGun.add(hand);
+}
+// граната в левой руке: видна, пока она есть; на 4 улетает вперёд
+const viewNade = new THREE.Group();
+const nadeBall = mesh(G.sphere, MAT.dark, 0.09, 0.11, 0.09, 0, 0, 0);
+viewNade.add(nadeBall, mesh(G.box, MAT.skin, 0.08, 0.06, 0.1, 0, -0.07, 0.02), mesh(G.cyl, MAT.dark, 0.02, 0.03, 0.02, 0, 0.065, 0));
+viewNade.position.set(-0.24, -0.2, -0.45);
+viewNade.visible = false;
+camera.add(viewNade);
+let nadeFor = null, nadeThrow = 0;
+addEventListener('keydown', (e) => { if (e.code === 'Digit4' && !e.repeat && locked()) nadeThrow = 1; });
 const cv2d = document.getElementById('cv');
 const locked = () => document.pointerLockElement === cv2d;
 const shopOpen = () => { const el = document.getElementById('shop'); return el && !el.classList.contains('hidden'); };
@@ -224,8 +264,12 @@ function placeFps(dt, me, o) {
   camera.lookAt(camera.position.x + Math.cos(yaw) * cp, camera.position.y + Math.sin(pitch), camera.position.z + Math.sin(yaw) * cp);
   if (shake > 0.01) { camera.rotation.z += (Math.random() - 0.5) * shake * 0.003; shake *= Math.exp(-dt * 8); }
   gunKick *= Math.exp(-dt * 14);
-  viewGun.position.z = -0.42 + gunKick * 0.05;
+  const bob = Math.hypot(me.x - (placeFps.px ?? me.x), me.y - (placeFps.py ?? me.y)) > 0.5 && !h ? performance.now() * 0.012 : 0;
+  placeFps.px = me.x; placeFps.py = me.y;
+  viewGun.position.set(0.17 + Math.sin(bob) * 0.006, -0.16 + Math.abs(Math.cos(bob)) * 0.006 - h * 0.01, -0.42 + gunKick * 0.05);
   viewGun.rotation.x = gunKick * 0.25;
+  nadeThrow = Math.max(0, nadeThrow - dt * 2.5);
+  viewNade.position.set(-0.24 + nadeThrow * 0.1, -0.2 + Math.sin(nadeThrow * Math.PI) * 0.15, -0.45 - nadeThrow * 0.5);
 }
 
 function placeCamera(dt, me) {
@@ -266,6 +310,13 @@ function frame(now) {
   cross.style.display = firstPerson ? 'block' : 'none';
   hint.style.display = firstPerson && !locked() && S.phase === 'playing' ? 'block' : 'none';
   viewGun.visible = !!(firstPerson && me.alive);
+  if (viewGun.visible) setViewGun(me.turret ? null : me.weapon);
+  viewNade.visible = !!(firstPerson && me.alive && me.grenade) || nadeThrow > 0.05;
+  if (me?.grenade && me.grenade !== nadeFor) {
+    nadeFor = me.grenade;
+    nadeBall.material = mat(window.WEAPONS?.SHOP?.[me.grenade]?.model?.parts?.[0]?.color || '#556b2f');
+  }
+  if (firstPerson) setGap(4 + (me.spr || 0) * 260 + gunKick * 6);
   for (const p of S.players) {
     if (!p.char) continue;
     let o = players.get(p.id);
@@ -303,14 +354,19 @@ function frame(now) {
     if (o) o.base.material = v.heat ? MAT.turretHot : v.by ? MAT.turretBusy : MAT.turret;
   }
 
-  let n = 0;
+  let n = 0, nt = 0;
   for (const s of S.shots) {
-    if (n >= 256) break;
+    if (s.f && nt < 256) {
+      const ca = Math.cos(s.a || 0), sa = Math.sin(s.a || 0);
+      put(tracers, nt++, wx(s.x) - ca * TRACER / 2, 1.6, wz(s.y) - sa * TRACER / 2, TRACER, 0.05, 0.05, -(s.a || 0));
+      continue;
+    }
+    if (n >= 256) continue;
     const r = Math.max(0.12, s.r / SCALE);
-    put(shots, n, wx(s.x), 0.75, wz(s.y), r * 2, r * 2, r * 2);
+    put(shots, n, wx(s.x), 1.1, wz(s.y), r * 2, r * 2, r * 2);
     shots.setColorAt(n++, C.set(TEAM[s.team] || '#ffe3a0'));
   }
-  flush(shots, n);
+  flush(shots, n); flush(tracers, nt);
   const zc = {}; for (const kk in zones) zc[kk] = 0;
   for (const z of S.zones) {
     const kind = zones[z.kind] ? z.kind : 'zone', r = z.r / SCALE, i = zc[kind]++;
