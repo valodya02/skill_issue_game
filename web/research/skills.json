@@ -1,0 +1,278 @@
+[
+  {
+    "id": "tapok",
+    "owner_hint": "Тралалеро",
+    "slot": "q",
+    "label": "Тапок за опоздание",
+    "type": "shot",
+    "cd": 5000,
+    "dmg": 65,
+    "speed": 850,
+    "r": 16,
+    "range": 560,
+    "fx": {
+      "stun": 550
+    },
+    "why_funny": "Дисциплинарное взыскание летит в тапке.",
+    "new_type": false
+  },
+  {
+    "id": "retake",
+    "owner_hint": "Huh Cat",
+    "slot": "r",
+    "label": "ПЕРЕСДАЧА",
+    "type": "aoe",
+    "at": "cursor",
+    "cd": 22000,
+    "r": 170,
+    "dmg": 130,
+    "delay": 800,
+    "fx": {
+      "root": 700
+    },
+    "why_funny": "Красный круг появился раньше, чем студент понял вопрос.",
+    "new_type": false
+  },
+  {
+    "id": "last_train",
+    "owner_hint": "Тралалеро",
+    "slot": "q",
+    "label": "Последнее метро",
+    "type": "dash",
+    "cd": 5500,
+    "dist": 230,
+    "dmg": 45,
+    "why_funny": "Три ноги используются по назначению только после закрытия дверей.",
+    "new_type": false
+  },
+  {
+    "id": "canteen",
+    "owner_hint": "Чимпанзини",
+    "slot": "e",
+    "label": "Компот по студенческому",
+    "type": "heal",
+    "cd": 11000,
+    "r": 220,
+    "amount": 170,
+    "why_funny": "Одна порция компота удерживает команду в высшем образовании.",
+    "new_type": false
+  },
+  {
+    "id": "deadline",
+    "owner_hint": "Максвелл",
+    "slot": "e",
+    "label": "До дедлайна минута",
+    "type": "buff",
+    "cd": 10000,
+    "haste": 1700,
+    "why_funny": "Скорость появляется строго после истечения разумного срока.",
+    "new_type": false
+  },
+  {
+    "id": "exam_pass",
+    "owner_hint": "Chill Guy",
+    "slot": "e",
+    "label": "Автомат за посещение",
+    "type": "buff",
+    "cd": 14000,
+    "invuln": 700,
+    "why_funny": "Единственные 0,7 секунды, когда посещаемость действительно защищает.",
+    "new_type": false
+  },
+  {
+    "id": "read_receipt",
+    "owner_hint": "Импостор",
+    "slot": "q",
+    "label": "Был в сети недавно",
+    "type": "buff",
+    "cd": 11000,
+    "stealth": 1700,
+    "why_funny": "Тиммейт существует, пока не попросили помочь.",
+    "new_type": false
+  },
+  {
+    "id": "wifi",
+    "owner_hint": "Брр Патапим",
+    "slot": "e",
+    "label": "Общежитский Wi-Fi",
+    "type": "zone",
+    "cd": 10000,
+    "r": 130,
+    "ms": 2500,
+    "dmg": 0,
+    "fx": {
+      "slow": 350
+    },
+    "why_funny": "Интернет тормозит даже ноги.",
+    "new_type": false
+  },
+  {
+    "id": "peel",
+    "owner_hint": "Чимпанзини",
+    "slot": "q",
+    "label": "Техника безопасности",
+    "type": "trap",
+    "cd": 7500,
+    "r": 36,
+    "ms": 9000,
+    "dmg": 45,
+    "fx": {
+      "stun": 650
+    },
+    "why_funny": "Обезьяна провела инструктаж и оставила кожуру.",
+    "new_type": false
+  },
+  {
+    "id": "queue",
+    "owner_hint": "Бонека",
+    "slot": "e",
+    "label": "Очередь в столовку",
+    "type": "wall",
+    "cd": 9500,
+    "len": 180,
+    "ms": 2400,
+    "why_funny": "Стена из людей, у которых окно ровно десять минут.",
+    "new_type": false
+  },
+  {
+    "id": "group_leader",
+    "owner_hint": "Джон Порк",
+    "slot": "r",
+    "label": "Староста нашёл",
+    "type": "blink",
+    "cd": 22000,
+    "dmg": 135,
+    "fx": {
+      "slow": 700
+    },
+    "why_funny": "Оказывается за спиной ближайшего должника.",
+    "new_type": false
+  },
+  {
+    "id": "print_rain",
+    "owner_hint": "Pop Cat",
+    "slot": "r",
+    "label": "Принтер зажевал",
+    "type": "barrage",
+    "cd": 24000,
+    "count": 6,
+    "r": 60,
+    "dmg": 55,
+    "over": 1600,
+    "why_funny": "Курсовая подаётся листами прямо в противника.",
+    "new_type": false
+  },
+  {
+    "id": "attendance",
+    "owner_hint": "Джон Порк",
+    "slot": "r",
+    "label": "ПЕРЕКЛИЧКА",
+    "type": "markAll",
+    "cd": 25000,
+    "r": 52,
+    "dmg": 100,
+    "delay": 1800,
+    "why_funny": "Каждый противник внезапно присутствует на паре.",
+    "new_type": false
+  },
+  {
+    "id": "mystery",
+    "owner_hint": "Тим Чиз",
+    "slot": "q",
+    "label": "Что в билете",
+    "type": "random",
+    "cd": 10000,
+    "pool": "qe",
+    "why_funny": "Вопрос из билета выбирает движок, а не преподаватель.",
+    "new_type": false,
+    "integration_note": "В текущем random исключён только id skebob. Не давать этот скилл другому id без исключения random из пула: возможна рекурсия."
+  },
+  {
+    "id": "67",
+    "owner_hint": "67",
+    "slot": "q",
+    "label": "Шесть, семь",
+    "type": "shot",
+    "cd": 6500,
+    "dmg": 67,
+    "speed": 800,
+    "r": 10,
+    "range": 600,
+    "count": 2,
+    "spread": 0.3,
+    "why_funny": "Два числа, ноль объяснений, сто тридцать четыре урона при двух попаданиях.",
+    "new_type": false
+  },
+  {
+    "id": "oiia",
+    "owner_hint": "OIIA",
+    "slot": "r",
+    "label": "OIIA OIIA",
+    "type": "aoe",
+    "at": "self",
+    "cd": 22000,
+    "r": 180,
+    "dmg": 100,
+    "delay": 0,
+    "fx": {
+      "slow": 900
+    },
+    "why_funny": "Кот вращается, у противников вращается расписание.",
+    "new_type": false
+  },
+  {
+    "id": "capy",
+    "owner_hint": "Капибара",
+    "slot": "e",
+    "label": "Капибара в джакузи",
+    "type": "heal",
+    "cd": 12000,
+    "r": 200,
+    "amount": 190,
+    "why_funny": "Боевой санаторий на двух посетителей.",
+    "new_type": false
+  },
+  {
+    "id": "arms",
+    "owner_hint": "Белый медведь 2026",
+    "slot": "q",
+    "label": "На передних лапах",
+    "type": "dash",
+    "cd": 6500,
+    "dist": 210,
+    "dmg": 40,
+    "invuln": 150,
+    "why_funny": "Две лапы ушли на аутсорс, скорость осталась.",
+    "new_type": false
+  },
+  {
+    "id": "nocoffee",
+    "owner_hint": "Капучино Ассасино",
+    "slot": "q",
+    "label": "Без кофе не подхожу",
+    "type": "shot",
+    "cd": 6000,
+    "dmg": 70,
+    "speed": 900,
+    "r": 11,
+    "range": 600,
+    "fx": {
+      "bleed": 1200
+    },
+    "why_funny": "Утренний кофе наконец-то наносит прямой урон.",
+    "new_type": false
+  },
+  {
+    "id": "newcat",
+    "owner_hint": "Тилькайо",
+    "slot": "q",
+    "label": "Новый кот выпал",
+    "type": "dash",
+    "cd": 6500,
+    "dist": 200,
+    "dmg": 0,
+    "invuln": 250,
+    "why_funny": "Патч добавил кота быстрее, чем разработчики добавили баланс.",
+    "new_type": false
+  }
+]

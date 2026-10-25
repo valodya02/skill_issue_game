@@ -1,0 +1,13 @@
+{
+  "name": "brainrot-battle",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "three": "^0.180.0"
+  }
+}

@@ -1,0 +1,2136 @@
+[
+  {
+    "id": "tralalero",
+    "name": "Тралалеро Тралала",
+    "emoji": "🦈",
+    "role": "Фланкер",
+    "hp": 850,
+    "speed": 320,
+    "shout": "Tralalero Tralala!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/tralalero-tralala",
+    "peak": "2025-01",
+    "why_funny": "Акула покупает обувь по акции 3 по цене 2.",
+    "origin": "TikTok; только имя, без непристойной исходной озвучки.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусные ролики января 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "sahur",
+    "name": "Тун Тун Тун Сахур",
+    "emoji": "🪵",
+    "role": "Танк",
+    "hp": 1350,
+    "speed": 235,
+    "shout": "Tung tung tung Sahur!",
+    "lang": "id-ID",
+    "skills": {
+      "a": {
+        "label": "Бита",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 75,
+        "speed": 850,
+        "r": 10,
+        "range": 200
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Очередь в столовку",
+        "type": "wall",
+        "cd": 9500,
+        "len": 180,
+        "ms": 2400
+      },
+      "r": {
+        "label": "Староста нашёл",
+        "type": "blink",
+        "cd": 22000,
+        "dmg": 135,
+        "fx": {
+          "slow": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/tung-tung-tung-sahur",
+    "peak": "2025-03",
+    "why_funny": "Деревянный будильник пришёл объяснить режим сна битой.",
+    "origin": "TikTok @noxaasht, 28.02.2025, вымышленный деревянный персонаж.",
+    "peak_is_estimate": true,
+    "peak_basis": "Всплеск марта 2025, новые ответвления весной 2026.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "ballerina",
+    "name": "Балерина Капучина",
+    "emoji": "☕",
+    "role": "Саппорт",
+    "hp": 850,
+    "speed": 290,
+    "shout": "Ballerina Cappuccina!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/ballerina-cappuccina-italian-brainrot",
+    "peak": "2025-03",
+    "why_funny": "Балетная грация при стоимости головы как у кофе возле университета.",
+    "origin": "TikTok @aironic.fun, 19.03.2025, балерина с чашкой вместо головы.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусность конца марта 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "patapim",
+    "name": "Брр Брр Патапим",
+    "emoji": "🌳",
+    "role": "Контроль",
+    "hp": 1150,
+    "speed": 245,
+    "shout": "Brr brr Patapim!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      },
+      "e": {
+        "label": "Общежитский Wi-Fi",
+        "type": "zone",
+        "cd": 10000,
+        "r": 130,
+        "ms": 2500,
+        "dmg": 0,
+        "fx": {
+          "slow": 350
+        }
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/brr-brr-patapim",
+    "peak": "2025-03",
+    "why_funny": "Лес получил ноги и лично отвечает за вырубку рейтинга.",
+    "origin": "TikTok @ofuscabreno, гибрид дерева и обезьяны.",
+    "peak_is_estimate": true,
+    "peak_basis": "Дуэли конца марта 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "bananini",
+    "name": "Чимпанзини Бананини",
+    "emoji": "🍌",
+    "role": "Трикстер",
+    "hp": 850,
+    "speed": 305,
+    "shout": "Chimpanzini Bananini!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Техника безопасности",
+        "type": "trap",
+        "cd": 7500,
+        "r": 36,
+        "ms": 9000,
+        "dmg": 45,
+        "fx": {
+          "stun": 650
+        }
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/chimpanzini-bananini-italian-brainrot",
+    "peak": "2025-03",
+    "why_funny": "Обезьяна совместила себя с перекусом и закрыла вопрос meal prep.",
+    "origin": "TikTok @alexey_pigeon, 13.03.2025, банан-шимпанзе.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусные ролики второй половины марта 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "cappuccino",
+    "name": "Капучино Ассасино",
+    "emoji": "🥷",
+    "role": "Ассасин",
+    "hp": 800,
+    "speed": 315,
+    "shout": "Cappuccino Assassino!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Без кофе не подхожу",
+        "type": "shot",
+        "cd": 6000,
+        "dmg": 70,
+        "speed": 900,
+        "r": 11,
+        "range": 600,
+        "fx": {
+          "bleed": 1200
+        }
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "Староста нашёл",
+        "type": "blink",
+        "cd": 22000,
+        "dmg": 135,
+        "fx": {
+          "slow": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/cappuccino-assassino-italian-brainrot",
+    "peak": "2025-04",
+    "why_funny": "Кофе на вынос вынес уже всю команду.",
+    "origin": "TikTok @alexey_pigeon, 05.03.2025, стакан-ниндзя, без трагического фан-лора.",
+    "peak_is_estimate": true,
+    "peak_basis": "Рост марта-апреля 2025, датированный обзор 29.04.2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "boneca",
+    "name": "Бонека Амбалабу",
+    "emoji": "🐸",
+    "role": "Танк",
+    "hp": 1300,
+    "speed": 240,
+    "shout": "Boneca Ambalabu!",
+    "lang": "id-ID",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "На передних лапах",
+        "type": "dash",
+        "cd": 6500,
+        "dist": 210,
+        "dmg": 40,
+        "invuln": 150
+      },
+      "e": {
+        "label": "Очередь в столовку",
+        "type": "wall",
+        "cd": 9500,
+        "len": 180,
+        "ms": 2400
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/boneca-ambalabu",
+    "peak": "2025-04",
+    "why_funny": "Лягушка с телом-шиной буквально переобулась на ходу.",
+    "origin": "TikTok @ofuscabreno, 02.02.2025, лягушка-шина на человеческих ногах.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусные дуэли марта-апреля 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "trippi",
+    "name": "Триппи Троппи",
+    "emoji": "🐟",
+    "role": "Фланкер",
+    "hp": 900,
+    "speed": 300,
+    "shout": "Trippi Troppi!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "Общежитский Wi-Fi",
+        "type": "zone",
+        "cd": 10000,
+        "r": 130,
+        "ms": 2500,
+        "dmg": 0,
+        "fx": {
+          "slow": 350
+        }
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/trippi-troppi-trulimero-trulichina-italian-brainrot",
+    "peak": "2025-04",
+    "why_funny": "Рыба и кот объединились, чтобы спорить о корме внутри одного тела.",
+    "origin": "TikTok, несколько вариантов гибрида, здесь кот-рыба.",
+    "peak_is_estimate": true,
+    "peak_basis": "Популяризация конца марта и начала апреля 2025.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "lirili",
+    "name": "Лирили Ларила",
+    "emoji": "🌵",
+    "role": "Контроль",
+    "hp": 1200,
+    "speed": 240,
+    "shout": "Lirili Larila!",
+    "lang": "it-IT",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Очередь в столовку",
+        "type": "wall",
+        "cd": 9500,
+        "len": 180,
+        "ms": 2400
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/italian-brainrot-ai-italian-animals",
+    "peak": null,
+    "why_funny": "Слон-кактус в обуви выглядит как наказание за плохой промпт.",
+    "origin": "Italian brainrot, слон-кактус; отдельную помесячную историю не нашёл.",
+    "peak_is_estimate": false,
+    "peak_basis": "Месяц пика не установлен, страница семейства подтверждает образ.",
+    "relevance_2026": "established_brainrot",
+    "relevance_note": "Участник brainrot-семейства; индивидуальный октябрьский тренд не доказан.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "john_pork",
+    "name": "Джон Порк",
+    "emoji": "🐷",
+    "role": "Преследователь",
+    "hp": 1050,
+    "speed": 260,
+    "shout": "John Pork is calling!",
+    "lang": "en-US",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "ПЕРЕКЛИЧКА",
+        "type": "markAll",
+        "cd": 25000,
+        "r": 52,
+        "dmg": 100,
+        "delay": 1800
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/people/john-pork-john-pork-is-calling",
+    "peak": "2023-03",
+    "why_funny": "Входящий от свиньи пугает сильнее входящего от старосты.",
+    "origin": "Вымышленный CGI-инфлюенсер, Instagram с 2018; используем только звонки.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусные звонки марта 2023, новая лор-волна 2025.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "tim_cheese",
+    "name": "Тим Чиз",
+    "emoji": "🐭",
+    "role": "Трикстер",
+    "hp": 850,
+    "speed": 300,
+    "shout": "Сырный вопрос!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Шесть, семь",
+        "type": "shot",
+        "cd": 6500,
+        "dmg": 67,
+        "speed": 800,
+        "r": 10,
+        "range": 600,
+        "count": 2,
+        "spread": 0.3
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/events/free-john-pork-movement-john-pork-lore",
+    "peak": "2025-03",
+    "why_funny": "Мышь в очках ведёт себя как главный юрист сырного картеля.",
+    "origin": "Вымышленная мышь из TikTok-лора; без убийств и реальных протестов.",
+    "peak_is_estimate": true,
+    "peak_basis": "Всплеск лора Джона Порка в марте 2025.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "shailushai",
+    "name": "Шайлушай",
+    "emoji": "🍄",
+    "role": "Контроль",
+    "hp": 900,
+    "speed": 280,
+    "shout": "Шайлушай!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Общежитский Wi-Fi",
+        "type": "zone",
+        "cd": 10000,
+        "r": 130,
+        "ms": 2500,
+        "dmg": 0,
+        "fx": {
+          "slow": 350
+        }
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/smurf-cat/",
+    "peak": "2023-09",
+    "why_funny": "Грибной кот идёт по лесу с видом человека, который уже сдал все долги.",
+    "origin": "Рунет-слайдшоу по иллюстрации Nate Hallinan Smurf Sighting; музыку не копируем.",
+    "peak_is_estimate": true,
+    "peak_basis": "Русская волна августа и глобальные ремиксы сентября 2023.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "maxwell",
+    "name": "Максвелл",
+    "emoji": "🐈",
+    "role": "Мобильный саппорт",
+    "hp": 950,
+    "speed": 285,
+    "shout": "Крутимся!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/maxwell-the-cat-spinning-cat",
+    "peak": "2022-11",
+    "why_funny": "Кот вращается, потому что это единственный доступный карьерный трек.",
+    "origin": "Garry's Mod / Steam Workshop, вращающийся чёрно-белый кот.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусность модели в октябре-ноябре 2022.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "huh_cat",
+    "name": "Huh Cat",
+    "emoji": "😺",
+    "role": "Контроль",
+    "hp": 950,
+    "speed": 270,
+    "shout": "Huh?",
+    "lang": "en-US",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Общежитский Wi-Fi",
+        "type": "zone",
+        "cd": 10000,
+        "r": 130,
+        "ms": 2500,
+        "dmg": 0,
+        "fx": {
+          "slow": 350
+        }
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/huh-cat",
+    "peak": "2023-10",
+    "why_funny": "Кот услышал условие задачи и честно выразил мнение группы.",
+    "origin": "TikTok Ben Cat; ранние русскоязычные подписи также задокументированы.",
+    "peak_is_estimate": true,
+    "peak_basis": "Распространение осенью 2023, оценка по примерам.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "happy_cat",
+    "name": "Happy Cat",
+    "emoji": "😸",
+    "role": "Саппорт",
+    "hp": 850,
+    "speed": 300,
+    "shout": "Happy happy happy!",
+    "lang": "en-US",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/happy-happy-happy-cat",
+    "peak": "2023-03",
+    "why_funny": "Кот празднует так, будто отменили первую пару.",
+    "origin": "Ролик прыгающего котёнка 2015, музыкальные ремиксы 2023.",
+    "peak_is_estimate": true,
+    "peak_basis": "Кошачьи монтажи марта-апреля 2023.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "popcat",
+    "name": "Pop Cat",
+    "emoji": "😮",
+    "role": "Залповик",
+    "hp": 900,
+    "speed": 275,
+    "shout": "Поп!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Шесть, семь",
+        "type": "shot",
+        "cd": 6500,
+        "dmg": 67,
+        "speed": 800,
+        "r": 10,
+        "range": 600,
+        "count": 2,
+        "spread": 0.3
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/pop-cat",
+    "peak": "2020-10",
+    "why_funny": "Два кадра кота создают больше контента, чем весь медиацентр.",
+    "origin": "Кот Oatmeal с открывающимся ртом; без криптовалютных ответвлений.",
+    "peak_is_estimate": true,
+    "peak_basis": "Вирусный пост 10.10.2020, отдельная clicker-волна в 2021.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "bingus",
+    "name": "Бингус",
+    "emoji": "🐱",
+    "role": "Саппорт",
+    "hp": 1050,
+    "speed": 255,
+    "shout": "Бингус здесь!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Капибара в джакузи",
+        "type": "heal",
+        "cd": 12000,
+        "r": 200,
+        "amount": 190
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/bingus",
+    "peak": "2020-09",
+    "why_funny": "Лысый кот выглядит так, будто бюджет на текстуры ушёл на сервер.",
+    "origin": "Видео сфинкса, Instagram / Reddit 2020.",
+    "peak_is_estimate": true,
+    "peak_basis": "Взрыв популярности в Reddit в сентябре 2020.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "floppa",
+    "name": "Большой Шлёпа",
+    "emoji": "🐈",
+    "role": "Танк",
+    "hp": 1250,
+    "speed": 240,
+    "shout": "Пельмени!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/big-floppa",
+    "peak": "2021-02",
+    "why_funny": "Уши каракала ловят Wi-Fi и звук открывающейся пачки пельменей.",
+    "origin": "Московский каракал Гоша, Instagram / low-poly ремиксы, бытовая версия.",
+    "peak_is_estimate": true,
+    "peak_basis": "Low-poly волна февраля 2021, первый широкий рост весной 2020.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "chill_guy",
+    "name": "Чилловый парень",
+    "emoji": "🐶",
+    "role": "Выживание",
+    "hp": 1100,
+    "speed": 255,
+    "shout": "Я просто чилловый парень.",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "Автомат за посещение",
+        "type": "buff",
+        "cd": 14000,
+        "invuln": 700
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/just-a-chill-guy-my-new-character",
+    "peak": "2024-11",
+    "why_funny": "Вокруг перестрелка, а он как будто пришёл за справкой.",
+    "origin": "Рисованный персонаж Phillip Banks, не портрет человека.",
+    "peak_is_estimate": true,
+    "peak_basis": "Массовая TikTok-волна ноября 2024, рисунок появился в 2023.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "doge",
+    "name": "Доге",
+    "emoji": "🐕",
+    "role": "Универсал",
+    "hp": 1000,
+    "speed": 270,
+    "shout": "Вау!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Шесть, семь",
+        "type": "shot",
+        "cd": 6500,
+        "dmg": 67,
+        "speed": 800,
+        "r": 10,
+        "range": 600,
+        "count": 2,
+        "spread": 0.3
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/sensitive/memes/doge",
+    "peak": "2013-12",
+    "why_funny": "Собака оценивает происходящее как очень урон, такой раунд.",
+    "origin": "Классический Shiba Inu с внутренним монологом; без политики и монет.",
+    "peak_is_estimate": true,
+    "peak_basis": "Широкая волна конца 2013, оценка месяца.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "cheems",
+    "name": "Чимс",
+    "emoji": "🐕",
+    "role": "Контроль",
+    "hp": 1000,
+    "speed": 265,
+    "shout": "Чимсбургер!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/cheems",
+    "peak": null,
+    "why_funny": "Собака не выговаривает бургер, но уверенно выговаривает противника.",
+    "origin": "Doge-spinoff по собаке Balltze, бытовые мемы.",
+    "peak_is_estimate": false,
+    "peak_basis": "Первые мемы июня 2019; месяц общего максимума неизвестен.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "nyan",
+    "name": "Нян-кэт",
+    "emoji": "🌈",
+    "role": "Скорость",
+    "hp": 800,
+    "speed": 325,
+    "shout": "Ня-ня-ня!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/sensitive/memes/nyan-cat",
+    "peak": "2011-04",
+    "why_funny": "Кот-бутерброд летит по космосу и не задаёт финансовых вопросов.",
+    "origin": "Пиксельный персонаж Chris Torres; собственная озвучка.",
+    "peak_is_estimate": true,
+    "peak_basis": "Массовое распространение в апреле 2011.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "trollface",
+    "name": "Троллфейс",
+    "emoji": "😏",
+    "role": "Трикстер",
+    "hp": 950,
+    "speed": 285,
+    "shout": "Проблемы?",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Техника безопасности",
+        "type": "trap",
+        "cd": 7500,
+        "r": 36,
+        "ms": 9000,
+        "dmg": 45,
+        "fx": {
+          "stun": 650
+        }
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/trollface",
+    "peak": null,
+    "why_funny": "Лицо заранее знает, что баланс опять сломан.",
+    "origin": "Рисованный rage-comic персонаж Carlos Ramirez, без Trollge-хоррора.",
+    "peak_is_estimate": false,
+    "peak_basis": "Волна первой половины 2009; точный месяц пика не установлен.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "impostor",
+    "name": "Импостор",
+    "emoji": "👾",
+    "role": "Ассасин",
+    "hp": 850,
+    "speed": 310,
+    "shout": "Сус!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "e": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "r": {
+        "label": "Староста нашёл",
+        "type": "blink",
+        "cd": 22000,
+        "dmg": 135,
+        "fx": {
+          "slow": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/subcultures/among-us",
+    "peak": "2020-09",
+    "why_funny": "Даже после выстрела найдёт аргумент, что это не он.",
+    "origin": "Игровой вымышленный персонаж Innersloth, sus / amogus.",
+    "peak_is_estimate": true,
+    "peak_basis": "Рост игры и мемов июля-сентября 2020.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "capybara",
+    "name": "Капибара",
+    "emoji": "🦫",
+    "role": "Саппорт",
+    "hp": 1150,
+    "speed": 245,
+    "shout": "Капибара!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Капибара в джакузи",
+        "type": "heal",
+        "cd": 12000,
+        "r": 200,
+        "amount": 190
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/capybara-song-%D0%BA%D0%B0%D0%BF%D0%B8%D0%B1%D0%B0%D1%80%D0%B0",
+    "peak": "2023-03",
+    "why_funny": "Капибара сидит в воде, пока команда теряет рассудок.",
+    "origin": "Русскоязычный песенный мем, только образ и короткое слово.",
+    "peak_is_estimate": true,
+    "peak_basis": "Русская песенная волна начала 2023, выпуск песни в июле 2022.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "strawberry_elephant",
+    "name": "Клубничный слон",
+    "emoji": "🍓",
+    "role": "Танк",
+    "hp": 1400,
+    "speed": 230,
+    "shout": "Клубничного утра!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Компот по студенческому",
+        "type": "heal",
+        "cd": 11000,
+        "r": 220,
+        "amount": 170
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/strawberry-elephant",
+    "peak": "2023-09",
+    "why_funny": "Слон-клубника делает утро добрым силой.",
+    "origin": "Photoshop-гибрид из Worth1000, food-animal мем, без национальных шуток.",
+    "peak_is_estimate": true,
+    "peak_basis": "Повторная powerscaling-волна сентября 2023.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "oiia",
+    "name": "OIIA Cat",
+    "emoji": "🐈",
+    "role": "Контроль",
+    "hp": 900,
+    "speed": 295,
+    "shout": "Oii-a oii-a!",
+    "lang": "en-US",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/oo-ee-a-e-a-cat-remixes",
+    "peak": "2023-04",
+    "why_funny": "У кота одна анимация, зато она убедительнее его резюме.",
+    "origin": "Bilibili / музыкальные ремиксы, вращающийся кот Ethel; без стробоскопа.",
+    "peak_is_estimate": true,
+    "peak_basis": "Начало ремиксов апреля 2023; более поздний максимум не установлен.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "drog",
+    "name": "Дрог",
+    "emoji": "🐸",
+    "role": "Защитник",
+    "hp": 1200,
+    "speed": 250,
+    "shout": "Во де дао дун!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Автомат за посещение",
+        "type": "buff",
+        "cd": 14000,
+        "invuln": 700
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/drog-wo-de-dao-dun-cheems-frog",
+    "peak": "2026-03",
+    "why_funny": "Собака стала лягушкой и устроилась в отдел безопасности.",
+    "origin": "Cheems Frog / Wo De Dao Dun, животный гибрид; шутка про картинку.",
+    "peak_is_estimate": true,
+    "peak_basis": "Задокументированный рост февраля-марта 2026.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Есть активность в 2026; текущий октябрьский объём не установлен.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "tilcayo",
+    "name": "Тилькайо, новый кот",
+    "emoji": "🐱",
+    "role": "Фланкер",
+    "hp": 800,
+    "speed": 320,
+    "shout": "Новый кот выпал!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Новый кот выпал",
+        "type": "dash",
+        "cd": 6500,
+        "dist": 200,
+        "dmg": 0,
+        "invuln": 250
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/tilcayo-new-cat-dropped",
+    "peak": "2026-09",
+    "why_funny": "Интернет встретил нового кота как легендарный дроп в реальной жизни.",
+    "origin": "Сентябрьские New Cat Dropped-мемы; биологические утверждения игре не нужны.",
+    "peak_is_estimate": true,
+    "peak_basis": "Мемы и страница KYM от 20-21.09.2026.",
+    "relevance_2026": "fresh_2026",
+    "relevance_note": "Есть датированная осенняя волна; узнаваемость у московских студентов не измерялась.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "polar_2026",
+    "name": "Белый медведь 2026",
+    "emoji": "🐻",
+    "role": "Мобильный танк",
+    "hp": 1200,
+    "speed": 255,
+    "shout": "Ой-ой-ой!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "На передних лапах",
+        "type": "dash",
+        "cd": 6500,
+        "dist": 210,
+        "dmg": 40,
+        "invuln": 150
+      },
+      "e": {
+        "label": "Автомат за посещение",
+        "type": "buff",
+        "cd": 14000,
+        "invuln": 700
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/polar-bear-2026",
+    "peak": "2023-09",
+    "why_funny": "Мем три года обещал появиться в 2026, и вот у него собеседование.",
+    "origin": "Русскоязычный TikTok, медведь на передних лапах; без угрожающих дат.",
+    "peak_is_estimate": true,
+    "peak_basis": "Волна сентября 2023; 2026 в имени не является датой пика.",
+    "relevance_2026": "evergreen_candidate",
+    "relevance_note": "Запасной кандидат. Свежую волну осени 2026 не нашёл.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры, исторической цитатой не является.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "six_seven",
+    "name": "67",
+    "emoji": "🔢",
+    "role": "Залповик",
+    "hp": 1000,
+    "speed": 267,
+    "shout": "Six, seven!",
+    "lang": "en-US",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Шесть, семь",
+        "type": "shot",
+        "cd": 6500,
+        "dmg": 67,
+        "speed": 800,
+        "r": 10,
+        "range": 600,
+        "count": 2,
+        "spread": 0.3
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/67-meme-six-seven",
+    "peak": null,
+    "why_funny": "Два числа превращают зал в хор, которому тоже не объяснили смысл.",
+    "origin": "Авторский маскот из цифр по мему 67. Не существующий персонаж и не портрет 67 Kid.",
+    "peak_is_estimate": false,
+    "peak_basis": "Есть измерение за январь-июль 2026 в Рунете; месяц максимума не установлен.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Есть активность в 2026; текущий октябрьский объём не установлен.",
+    "shout_is_canonical": true,
+    "shout_note": "Короткое имя или известная фраза; записать своим голосом.",
+    "popularity_source": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "vozduhan",
+    "name": "Воздухан",
+    "emoji": "🌀",
+    "role": "Контроль",
+    "hp": 1050,
+    "speed": 270,
+    "shout": "Сейчас всё объясню!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Общежитский Wi-Fi",
+        "type": "zone",
+        "cd": 10000,
+        "r": 130,
+        "ms": 2500,
+        "dmg": 0,
+        "fx": {
+          "slow": 350
+        }
+      },
+      "r": {
+        "label": "OIIA OIIA",
+        "type": "aoe",
+        "at": "self",
+        "cd": 22000,
+        "r": 180,
+        "dmg": 100,
+        "delay": 0,
+        "fx": {
+          "slow": 900
+        }
+      }
+    },
+    "source": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+    "peak": null,
+    "why_funny": "Вентилятор генерирует ветер с уверенностью человека, у которого ещё нет продукта.",
+    "origin": "Рунет-мем про пустые обещания, визуальные символы: вентилятор и кондиционер. Предлагается авторский маскот-вентилятор.",
+    "peak_is_estimate": false,
+    "peak_basis": "Первичное измерение Медиалогии за январь-июль 2026; помесячного максимума нет.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Измерен рост или возникновение в 2026, октябрьский объём не установлен. source подтверждает популярность и образ, origin_source отдельно не найден.",
+    "origin_source": null,
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "kotost",
+    "name": "Котость, Куки",
+    "emoji": "🐈",
+    "role": "Трикстер",
+    "hp": 900,
+    "speed": 295,
+    "shout": "Котость активирована!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Техника безопасности",
+        "type": "trap",
+        "cd": 7500,
+        "r": 36,
+        "ms": 9000,
+        "dmg": 45,
+        "fx": {
+          "stun": 650
+        }
+      },
+      "e": {
+        "label": "Был в сети недавно",
+        "type": "buff",
+        "cd": 11000,
+        "stealth": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+    "peak": null,
+    "why_funny": "Пятнистый кот ведёт переговоры так, будто человек тут домашнее животное.",
+    "origin": "Кот Куки из SlivkiShow и его мемные переосмысления. Только животное, без внешности и голоса владельца.",
+    "peak_is_estimate": false,
+    "peak_basis": "Первичное измерение Медиалогии за январь-июль 2026; помесячного максимума нет.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Измерен рост или возникновение в 2026, октябрьский объём не установлен. source подтверждает популярность и образ, origin_source отдельно не найден.",
+    "origin_source": null,
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "plaksik",
+    "name": "Плаксик",
+    "emoji": "🐹",
+    "role": "Саппорт",
+    "hp": 1150,
+    "speed": 245,
+    "shout": "Я просто за компотом!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Тапок за опоздание",
+        "type": "shot",
+        "cd": 5000,
+        "dmg": 65,
+        "speed": 850,
+        "r": 16,
+        "range": 560,
+        "fx": {
+          "stun": 550
+        }
+      },
+      "e": {
+        "label": "Капибара в джакузи",
+        "type": "heal",
+        "cd": 12000,
+        "r": 200,
+        "amount": 190
+      },
+      "r": {
+        "label": "ПЕРЕСДАЧА",
+        "type": "aoe",
+        "at": "cursor",
+        "cd": 22000,
+        "r": 170,
+        "dmg": 130,
+        "delay": 800,
+        "fx": {
+          "root": 700
+        }
+      }
+    },
+    "source": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+    "peak": null,
+    "why_funny": "Глаза морской свинки уже прочитали результаты сессии.",
+    "origin": "Морская свинка из фильма «Сказки на ночь» 2008, русскоязычное прозвище и новая волна 2026.",
+    "peak_is_estimate": false,
+    "peak_basis": "Первичное измерение Медиалогии за январь-июль 2026; помесячного максимума нет.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Измерен рост или возникновение в 2026, октябрьский объём не установлен. source подтверждает популярность и образ, origin_source отдельно не найден.",
+    "origin_source": null,
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика для игры.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  },
+  {
+    "id": "train_dog",
+    "name": "Пёс-поезд",
+    "emoji": "🚂",
+    "role": "Фланкер",
+    "hp": 1050,
+    "speed": 310,
+    "shout": "Пых-пых, гав!",
+    "lang": "ru-RU",
+    "skills": {
+      "a": {
+        "label": "Основная атака",
+        "type": "shot",
+        "cd": 480,
+        "dmg": 55,
+        "speed": 850,
+        "r": 10,
+        "range": 580
+      },
+      "q": {
+        "label": "Последнее метро",
+        "type": "dash",
+        "cd": 5500,
+        "dist": 230,
+        "dmg": 45
+      },
+      "e": {
+        "label": "До дедлайна минута",
+        "type": "buff",
+        "cd": 10000,
+        "haste": 1700
+      },
+      "r": {
+        "label": "Принтер зажевал",
+        "type": "barrage",
+        "cd": 24000,
+        "count": 6,
+        "r": 60,
+        "dmg": 55,
+        "over": 1600
+      }
+    },
+    "source": "https://knowyourmeme.com/memes/train-dog",
+    "peak": "2026-06",
+    "why_funny": "Пёс пыхтит в такт поезду, электричка наконец дружелюбная.",
+    "origin": "X @spongebobfan360, 15.06.2026, нарочито простой монтаж головы собаки на поезд.",
+    "peak_is_estimate": true,
+    "peak_basis": "Датированные вирусные публикации 15-25.06.2026; глобальный максимум не измерен.",
+    "relevance_2026": "wave_2026",
+    "relevance_note": "Подтверждена летняя волна; реакция российской аудитории и осенний объём не измерялись.",
+    "shout_is_canonical": false,
+    "shout_note": "Авторская реплика, исходный звук представляет собой дыхание собаки.",
+    "source_checked_at": "2026-10-25",
+    "source_status": "opened"
+  }
+]

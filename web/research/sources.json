@@ -1,0 +1,426 @@
+{
+  "checked_at": "2026-10-25",
+  "method": "Каждый непустой source был открыт через web.open. opened означает получено читаемое содержимое, не только поисковая карточка. null у оружия означает прямое открытие не подтверждено. Проверка не гарантирует доступность позже.",
+  "memes": [
+    {
+      "id": "tralalero",
+      "url": "https://knowyourmeme.com/memes/tralalero-tralala",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "sahur",
+      "url": "https://knowyourmeme.com/memes/tung-tung-tung-sahur",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "ballerina",
+      "url": "https://knowyourmeme.com/memes/ballerina-cappuccina-italian-brainrot",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "patapim",
+      "url": "https://knowyourmeme.com/memes/brr-brr-patapim",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "bananini",
+      "url": "https://knowyourmeme.com/memes/chimpanzini-bananini-italian-brainrot",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "cappuccino",
+      "url": "https://knowyourmeme.com/memes/cappuccino-assassino-italian-brainrot",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "boneca",
+      "url": "https://knowyourmeme.com/memes/boneca-ambalabu",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "trippi",
+      "url": "https://knowyourmeme.com/memes/trippi-troppi-trulimero-trulichina-italian-brainrot",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "lirili",
+      "url": "https://knowyourmeme.com/memes/italian-brainrot-ai-italian-animals",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "john_pork",
+      "url": "https://knowyourmeme.com/memes/people/john-pork-john-pork-is-calling",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "tim_cheese",
+      "url": "https://knowyourmeme.com/memes/events/free-john-pork-movement-john-pork-lore",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "shailushai",
+      "url": "https://knowyourmeme.com/memes/smurf-cat/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "maxwell",
+      "url": "https://knowyourmeme.com/memes/maxwell-the-cat-spinning-cat",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "huh_cat",
+      "url": "https://knowyourmeme.com/memes/huh-cat",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "happy_cat",
+      "url": "https://knowyourmeme.com/memes/happy-happy-happy-cat",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "popcat",
+      "url": "https://knowyourmeme.com/memes/pop-cat",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "bingus",
+      "url": "https://knowyourmeme.com/memes/bingus",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "floppa",
+      "url": "https://knowyourmeme.com/memes/big-floppa",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "chill_guy",
+      "url": "https://knowyourmeme.com/memes/just-a-chill-guy-my-new-character",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "doge",
+      "url": "https://knowyourmeme.com/sensitive/memes/doge",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "cheems",
+      "url": "https://knowyourmeme.com/memes/cheems",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "nyan",
+      "url": "https://knowyourmeme.com/sensitive/memes/nyan-cat",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "trollface",
+      "url": "https://knowyourmeme.com/memes/trollface",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "impostor",
+      "url": "https://knowyourmeme.com/memes/subcultures/among-us",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "capybara",
+      "url": "https://knowyourmeme.com/memes/capybara-song-%D0%BA%D0%B0%D0%BF%D0%B8%D0%B1%D0%B0%D1%80%D0%B0",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "strawberry_elephant",
+      "url": "https://knowyourmeme.com/memes/strawberry-elephant",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "oiia",
+      "url": "https://knowyourmeme.com/memes/oo-ee-a-e-a-cat-remixes",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "drog",
+      "url": "https://knowyourmeme.com/memes/drog-wo-de-dao-dun-cheems-frog",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "tilcayo",
+      "url": "https://knowyourmeme.com/memes/tilcayo-new-cat-dropped",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "polar_2026",
+      "url": "https://knowyourmeme.com/memes/polar-bear-2026",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "six_seven",
+      "url": "https://knowyourmeme.com/memes/67-meme-six-seven",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "id": "vozduhan",
+      "url": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Первичное измерение Медиалогии, страница открыта."
+    },
+    {
+      "id": "kotost",
+      "url": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Первичное измерение Медиалогии, страница открыта."
+    },
+    {
+      "id": "plaksik",
+      "url": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Первичное измерение Медиалогии, страница открыта."
+    },
+    {
+      "id": "train_dog",
+      "url": "https://knowyourmeme.com/memes/train-dog",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Прочитана web.open."
+    }
+  ],
+  "weapon_sources": [
+    {
+      "url": "https://cs2.gs/weapons/nova/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://cs2.gs/weapons/awp/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://cs2.gs/weapons/zeus-x27/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://playvalorant.com/en-us/agents/raze/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://playvalorant.com/en-us/agents/sova/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://playvalorant.com/en-us/agents/sage/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://news.blizzard.com/en-us/article/24146047/a-blast-to-the-past-begins-with-overwatch-classic",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://supercell.com/en/games/brawlstars/blog/release-notes/welcome-carl-2/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://play.google.com/store/apps/editorial?hl=en_US&id=mc_games_editorialevergreen_postinstall_spike_guide_now_brawl_stars_fcp",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://brawlstars.fandom.com/wiki/Piper",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: Failed to fetch https://brawlstars.fandom.com/wiki/Piper: (402) Payment Required"
+    },
+    {
+      "url": "https://www.teamfortress.com/pyro/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://www.teamfortress.com/?p=51&tab=updates",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://manuals.plus/m/a1974e215cd7ca05132909b1ef16d55a7f917f28af4f42c20dc26783aef9212c.pdf",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://www.fortnite.com/news/boogie-bomb-update?lang=en-US",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/fortnite/using-grenade-items-in-fortnite-creative",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://terraria.arcenserv.info/wiki/Water_Bolt",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://terraria.arcenserv.info/wiki/Bee_Gun",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://terraria.arcenserv.info/wiki/Flamarang",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://hotlinemiami.fandom.com/wiki/Weapons",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: Failed to fetch https://hotlinemiami.fandom.com/wiki/Weapons: (402) Payment Required"
+    },
+    {
+      "url": "https://hotlinemiami.fandom.com/wiki/Throwing_Knife",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: Failed to fetch https://hotlinemiami.fandom.com/wiki/Throwing_Knife: (402) Payment Required"
+    },
+    {
+      "url": "https://www.dota2.com/datafeed/herodata?hero_id=14&language=english",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://www.dota2.com/datafeed/herodata?hero_id=30&language=russian",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: URL https://www.dota2.com/datafeed/herodata?hero_id=30&language=russian is not accessible via this tool."
+    },
+    {
+      "url": "https://www.dota2.com/datafeed/herodata?hero_id=40&language=english",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://supercell.com/en/games/clashroyale/blog/release-notes/balance-changes-august-2023-/",
+      "status": "opened",
+      "checked_at": "2026-10-25",
+      "note": "Страница прочитана web.open."
+    },
+    {
+      "url": "https://liquipedia.net/clashroyale/Bowler",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: Failed to fetch https://liquipedia.net/clashroyale/Bowler: (403) Forbidden"
+    },
+    {
+      "url": "https://clashroyale.fandom.com/wiki/The_Log",
+      "status": "unverified",
+      "checked_at": "2026-10-25",
+      "note": "L0: Failed to fetch https://clashroyale.fandom.com/wiki/The_Log: (402) Payment Required"
+    }
+  ],
+  "additional_popularity_source": {
+    "url": "https://www-cdn.mlg.ru/blog/viral_smm/medialogiya-opredelila-samye-populyarnye-memy-pervoy-poloviny-2026-goda/",
+    "status": "opened",
+    "window": "2026-01-01/2026-07-31",
+    "published": "2026-08-21",
+    "note": "Первичное исследование, не помесячная статистика."
+  },
+  "source_snapshot_sha256": {
+    "web/public/chars.js": "B86EC6F0DF6732CDAB68983E95D866B598E256C1907194F74E07B194B3DD2958",
+    "web/public/weapons.js": "2AD515CD0CDBD8FEC497AC8B9CD260B337D41EDE704981D08394B7132F15CE24",
+    "web/server.js": "7065E08FF43928C58FD2AA108D59D47F5854445CEC9E886F29E40ABC38D3F095",
+    "web/public/client.js": "6B0328C6959C3968C4ADEEFD201248D59E65224098BFCFB152D907EA3E52AD8F",
+    "web/public/index.html": "7919B5BC947A2BE50094A0F462D8491E97CF9D118D4F670FD5626D83F969902F",
+    "web/forge.js": "D422980A0AEF1B4DFAF276ED97F91ADF7BD08E895E84AD3BF561349E5F0D1F4C",
+    "web/package.json": "53AB8BFE434581A0B09C72B59FF79CF34FA7B9FC64CC7701421144B9E055D634"
+  },
+  "snapshot_note": "Хеши прочитанных файлов на старте ресёрча. Параллельные задачи могут позже менять файлы, поэтому их отличие само по себе не означает правку этой задачей."
+}
