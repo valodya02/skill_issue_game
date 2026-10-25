@@ -660,8 +660,14 @@ if (require.main === module) setInterval(runTick, 1000 / TICK);
 io.on('connection', (sock) => {
   let room = null;
   const me = () => room && room.players.get(sock.id);
+  // null от клиента превращаем в undefined, чтобы сработали дефолты `= {}`; исключение в обработчике не роняет процесс
+  const on = sock.on.bind(sock);
+  sock.on = (ev, fn) => on(ev, (...args) => {
+    const fail = (e) => console.error(`[sock ${ev}]`, e && e.message);
+    try { const r = fn(...args.map((v) => (v === null ? undefined : v))); if (r && r.catch) r.catch(fail); } catch (e) { fail(e); }
+  });
 
-  sock.on('join', ({ code, name, mode }) => {
+  sock.on('join', ({ code, name, mode } = {}) => {
     code = String(code || 'arena').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || 'arena';
     const r = getRoom(code, mode);
     if (r.players.size >= slots(r) || r.phase !== 'lobby') return sock.emit('nope', 'Комната занята или бой уже идёт');
@@ -689,7 +695,11 @@ io.on('connection', (sock) => {
     addPlayer(room, 'bot' + uid++, ['Сигма-бот', 'NPC', 'Кринж-бот', 'Скуф'][Math.floor(Math.random() * 4)], true);
     tryStart(room);
   });
-  sock.on('input', (inp) => { const p = me(); if (p && inp) p.input = inp; });
+  sock.on('input', (inp) => {
+    const p = me(); if (!p || typeof inp !== 'object') return;
+    const n = (v) => (Number.isFinite(+v) ? +v : 0);
+    p.input = { u: !!inp.u, d: !!inp.d, l: !!inp.l, r: !!inp.r, j: !!inp.j, g: !!inp.g, ax: n(inp.ax), ay: n(inp.ay), mx: n(inp.mx), my: n(inp.my) };
+  });
   sock.on('terminal', () => { const p = me(); if (p) startCode(room, p, now()); });
   sock.on('code', ({ key } = {}) => { const p = me(); if (p) codeInput(room, p, key, now()); });
   sock.on('turret', () => {
@@ -708,7 +718,7 @@ io.on('connection', (sock) => {
     p.grenades[p.grenade] = false;
     p.grenade = p.grenades.coffee ? 'coffee' : p.grenades.smoke ? 'smoke' : null;
   });
-  sock.on('cast', ({ slot, x, y }) => {
+  sock.on('cast', ({ slot, x, y } = {}) => {
     const p = me();
     if (p && room.phase === 'playing' && ['a', 'q', 'e', 'r'].includes(slot)) cast(room, p, slot, +x || 0, +y || 0);
   });

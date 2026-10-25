@@ -1,6 +1,7 @@
 const { circleRect } = require('./physics.js');
 
 const JUMP_V = 520, GRAVITY = 1800, HOP_WINDOW = 150;
+const SUB_DT = 1 / 120;
 function axisMove(p, delta, axis, radius, map) {
   if (!delta) return;
   const other = axis === 'x' ? 'y' : 'x';
@@ -32,17 +33,7 @@ function movePlayer(p, dt, mx, my, speed, map, width, height, radius, t) {
   let jumped = false, landed = false, hopped = false;
   const magnitude = Math.hypot(mx, my);
   if (magnitude > 1) { mx /= magnitude; my /= magnitude; }
-  const accel = speed / 0.12 * (grounded ? 1 : 0.2);
   const targetX = mx * speed, targetY = my * speed;
-  const preserving = p.hop && Math.hypot(p.vx, p.vy) > speed &&
-    (!grounded || t - (p.lastLand ?? -Infinity) <= HOP_WINDOW) && p.vx * mx + p.vy * my > 0;
-  if ((mx || my) && !preserving) {
-    p.vx += Math.max(-accel * dt, Math.min(accel * dt, targetX - p.vx));
-    p.vy += Math.max(-accel * dt, Math.min(accel * dt, targetY - p.vy));
-  } else if (grounded && t - (p.lastLand ?? -Infinity) > HOP_WINDOW) {
-    const drag = Math.max(0, 1 - dt / 0.12);
-    p.vx *= drag; p.vy *= drag;
-  }
   if (grounded && pressed) {
     hopped = p.hasJumped && t - (p.lastLand ?? -Infinity) <= HOP_WINDOW;
     if (hopped) {
@@ -51,18 +42,37 @@ function movePlayer(p, dt, mx, my, speed, map, width, height, radius, t) {
     } else p.hop = 0;
     p.vz = JUMP_V; p.hasJumped = true; jumped = true;
   }
-  const cap = speed * (p.hop ? 1.6 : 1);
-  const velocity = Math.hypot(p.vx, p.vy);
-  if (velocity > cap) { p.vx *= cap / velocity; p.vy *= cap / velocity; }
-  if (p.z > 0 || jumped) {
-    p.z += p.vz * dt - 0.5 * GRAVITY * dt * dt;
-    p.vz -= GRAVITY * dt;
-    if (p.z <= 0) { p.z = 0; p.vz = 0; p.lastLand = t; landed = true; }
-  } else if (t - (p.lastLand ?? -Infinity) > HOP_WINDOW && Math.hypot(p.vx, p.vy) < speed * 1.01) p.hop = 0;
-  axisMove(p, p.vx * dt, 'x', radius, map);
-  axisMove(p, p.vy * dt, 'y', radius, map);
-  p.x = Math.max(radius, Math.min(width - radius, p.x));
-  p.y = Math.max(radius, Math.min(height - radius, p.y));
+  // A paused server cannot spend an unbounded number of steps catching up.
+  p._moveRemainder = (p._moveRemainder || 0) + Math.min(0.25, Math.max(0, dt));
+  const steps = Math.floor((p._moveRemainder + 1e-10) / SUB_DT);
+  p._moveRemainder = Math.max(0, p._moveRemainder - steps * SUB_DT);
+  for (let i = 0; i < steps; i++) {
+    const stepTime = t - (steps - 1 - i) * SUB_DT * 1000 - p._moveRemainder * 1000;
+    const onGround = p.z === 0 && p.vz === 0;
+    const accel = speed / 0.12 * (onGround ? 1 : 0.2);
+    const preserving = p.hop && Math.hypot(p.vx, p.vy) > speed &&
+      (!onGround || stepTime - (p.lastLand ?? -Infinity) <= HOP_WINDOW) && p.vx * mx + p.vy * my > 0;
+    if ((mx || my) && !preserving) {
+      p.vx += Math.max(-accel * SUB_DT, Math.min(accel * SUB_DT, targetX - p.vx));
+      p.vy += Math.max(-accel * SUB_DT, Math.min(accel * SUB_DT, targetY - p.vy));
+    } else if (onGround && stepTime - (p.lastLand ?? -Infinity) > HOP_WINDOW) {
+      const drag = Math.max(0, 1 - SUB_DT / 0.12);
+      p.vx *= drag; p.vy *= drag;
+    }
+    const cap = speed * (p.hop ? 1.6 : 1);
+    const velocity = Math.hypot(p.vx, p.vy);
+    if (velocity > cap) { p.vx *= cap / velocity; p.vy *= cap / velocity; }
+    if (p.z > 0 || p.vz > 0) {
+      const nextVz = p.vz - GRAVITY * SUB_DT;
+      p.z += (p.vz + nextVz) * 0.5 * SUB_DT;
+      p.vz = nextVz;
+      if (p.z <= 0) { p.z = 0; p.vz = 0; p.lastLand = stepTime; landed = true; }
+    } else if (stepTime - (p.lastLand ?? -Infinity) > HOP_WINDOW && Math.hypot(p.vx, p.vy) < speed * 1.01) p.hop = 0;
+    axisMove(p, p.vx * SUB_DT, 'x', radius, map);
+    axisMove(p, p.vy * SUB_DT, 'y', radius, map);
+    p.x = Math.max(radius, Math.min(width - radius, p.x));
+    p.y = Math.max(radius, Math.min(height - radius, p.y));
+  }
   return { jumped, landed, hopped };
 }
 module.exports = { movePlayer, JUMP_V, GRAVITY, HOP_WINDOW };

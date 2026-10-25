@@ -13,6 +13,9 @@ let terminal = null;
 const sound = (name, x, y, weapon) => { if (window.SFX?.play) window.SFX.play(name, { x, y, weapon }); };
 const keys = {};
 let scale = 1, ox = 0, oy = 0;
+// 3D-слой (client3d.js) читает состояние отсюда; без WebGL2 или с ?3d=0 работает 2D, F9 переключает
+window.GAME_VIEW = { get S() { return S; }, get meta() { return meta; }, get map() { return gameMap; } };
+const in3d = () => !!window.GAME3D?.on;
 
 // ---------- вход ----------
 const params = new URLSearchParams(location.search);
@@ -141,6 +144,7 @@ sock.on('state', (s) => {
 
 sock.on('fx', (f) => {
   const t = performance.now();
+  window.GAME3D?.fx(f);
   if (['shot', 'turret'].includes(f.k)) {
     const shooter = S?.players.reduce((best, p) => {
       const d = Math.hypot(p.x - f.x, p.y - f.y);
@@ -263,7 +267,7 @@ cv.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clien
 cv.addEventListener('mousedown', () => (mouse.down = true));
 addEventListener('mouseup', () => (mouse.down = false));
 cv.addEventListener('contextmenu', (e) => e.preventDefault());
-const toWorld = (x, y) => ({ x: (x - ox) / scale, y: (y - oy) / scale });
+const toWorld = (x, y) => (in3d() ? window.GAME3D.pick(x, y) : { x: (x - ox) / scale, y: (y - oy) / scale });
 
 setInterval(() => {
   if (!meta || !S) return;
@@ -284,13 +288,18 @@ function frame() {
   requestAnimationFrame(frame);
   const t = performance.now(), dpr = devicePixelRatio;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = '#0d0b14'; ctx.fillRect(0, 0, cv.width, cv.height);
+  const G3 = in3d();
+  if (G3) ctx.clearRect(0, 0, cv.width, cv.height);
+  else { ctx.fillStyle = '#0d0b14'; ctx.fillRect(0, 0, cv.width, cv.height); }
   if (!S || !meta) return;
   const W = meta.W, H = meta.H;
   scale = Math.min(innerWidth / W, (innerHeight - 70) / H);
   ox = (innerWidth - W * scale) / 2; oy = (innerHeight - 70 - H * scale) / 2 + 40;
   const sx = (Math.random() - 0.5) * shake, sy = (Math.random() - 0.5) * shake;
   shake *= 0.88;
+  const me = S.players.find((p) => p.id === meta.you);
+  world: {
+  if (G3) { labels3d(me, t); break world; }
   ctx.setTransform(scale * dpr, 0, 0, scale * dpr, (ox + sx) * dpr, (oy + sy) * dpr);
 
   // Карта загружается отдельно от snapshot.
@@ -310,7 +319,6 @@ function frame() {
     }
   }
 
-  const me = S.players.find((p) => p.id === meta.you);
   if (me?.st.jitter) shake = Math.max(shake, 3);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
@@ -399,6 +407,8 @@ function frame() {
     ctx.globalAlpha = 1;
   }
 
+  }
+
   // HUD в экранных координатах
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.textAlign = 'center'; ctx.font = 'bold 26px system-ui';
@@ -458,3 +468,44 @@ function frame() {
   }
 }
 frame();
+
+// В 3D мир рисует client3d.js, а здесь поверх только ники, хп и всплывающие цифры.
+function labels3d(me, t) {
+  const dpr = devicePixelRatio, G = window.GAME3D;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const smoke = S.zones.filter((z) => z.kind === 'smoke');
+  for (const p of S.players) {
+    if (!p.char || !p.alive) continue;
+    if (me && p.team !== me.team && (p.st.stealth || smoke.some((z) => Math.hypot(p.x - z.x, p.y - z.y) < z.r))) continue;
+    const c = CHARS[p.char], s = G.project(p.x, p.y, 1.9 + (p.z || 0) / 40);
+    if (!s.front) continue;
+    const hpw = 54, frac = p.hp / c.hp;
+    ctx.fillStyle = '#000a'; ctx.fillRect(s.x - hpw / 2, s.y, hpw, 6);
+    ctx.fillStyle = frac > 0.5 ? '#5dff9b' : frac > 0.25 ? '#ffd23f' : '#ff4f4f'; ctx.fillRect(s.x - hpw / 2, s.y, hpw * frac, 6);
+    ctx.font = 'bold 12px system-ui'; ctx.fillStyle = p.id === meta.you ? '#ffd23f' : '#fff'; ctx.fillText(p.name, s.x, s.y - 10);
+    const icons = (p.st.stun ? '💫' : '') + (p.st.root ? '🌿' : '') + (p.st.slow ? '🐌' : '') + (p.st.bleed ? '🩸' : '') + (p.st.haste ? '👟' : '') + (p.st.jitter ? '☕' : '');
+    if (icons) { ctx.font = '14px serif'; ctx.fillText(icons, s.x, s.y - 26); }
+  }
+  for (const d of S.drops) {
+    const s = G.project(d.x, d.y, 0.8);
+    ctx.font = '12px system-ui'; ctx.fillStyle = '#ffd23f'; ctx.fillText(d.emoji + ' ' + d.name + ' [F]', s.x, s.y);
+  }
+  if (S.bomb?.state === 'planted') {
+    const s = G.project(S.bomb.x, S.bomb.y, 0.8);
+    ctx.font = 'bold 18px system-ui'; ctx.fillStyle = '#fff'; ctx.fillText(`🩴 ${S.bomb.left}с`, s.x, s.y);
+  }
+  for (const v of gameMap?.turrets || []) {
+    if (!S.turrets?.find((item) => item.id === v.id)?.heat) continue;
+    const s = G.project(v.x, v.y, 1.6);
+    ctx.fillStyle = '#ff543c'; ctx.font = 'bold 12px system-ui'; ctx.fillText('ПЕРЕГРЕВ', s.x, s.y);
+  }
+  for (let i = fxs.length - 1; i >= 0; i--) {
+    const f = fxs[i], k = (t - f.t) / f.life;
+    if (k >= 1) { fxs.splice(i, 1); continue; }
+    if (f.k !== 'txt') continue;
+    const s = G.project(f.x, f.y + 30, 2.2);
+    ctx.globalAlpha = 1 - k; ctx.font = 'bold 20px system-ui'; ctx.fillStyle = f.color; ctx.fillText(f.text, s.x, s.y - k * 40);
+    ctx.globalAlpha = 1;
+  }
+}

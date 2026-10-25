@@ -3,7 +3,7 @@ import * as THREE from '/vendor/three.module.js';
 const ramps = new Map();
 function ramp() {
   if (ramps.has('three')) return ramps.get('three');
-  const texture = new THREE.DataTexture(new Uint8Array([69,69,69, 159,159,159, 255,255,255]), 3, 1, THREE.RGBFormat);
+  const texture = new THREE.DataTexture(new Uint8Array([110, 190, 255]), 3, 1, THREE.RedFormat); // RGBFormat в three r152+ удалён, с ним тун чернел
   texture.minFilter = THREE.NearestFilter;
   texture.magFilter = THREE.NearestFilter;
   texture.generateMipmaps = false;
